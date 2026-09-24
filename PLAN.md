@@ -522,3 +522,23 @@ Repo initialised and pushed to github.com/farhanishraq17/KagriCulture-IUT_BakeNe
 `.gitignore` excludes **Secrets.env** (API tokens), `data/` (8.8 GB of community datasets),
 `runs/` outputs except scripts and candidate lists, and `opponents/` (134 MB of public agents,
 re-fetchable with `runs/fetch_out.py`). Verified no KGAT_ token appears in any staged file.
+
+## 2026-09-25 (loop): idle-unit lever measured and CLOSED
+
+`runs/idle_probe.py` on the champion: 8.80 hands/turn, **0.65 PASS ops/turn + farmer idle 9.9% of
+turns = ~470 wasted unit-actions/game**. `runs/waste_probe.py`: **zero animal escapes**, 1.33 weeds,
+and 7 fed animals/game that never get CARE (a forgone +1 production each).
+
+Built `opt/idle_work.py` (runtime name `idle:BASE[:c+f+w]`): replaces PASS/missing unit ops with a
+useful op **on the tile that unit already stands on** (CARE / COLLECT_FERTILIZER / WATER), so it can
+never disturb the base's movement plan. Self-checked against the engine's legality rules.
+
+**Result: the slack is not usable.** Traced over a full game, idle units are parked on
+already-watered PLANT tiles (345) and on empty PASTURE structures with no animal (340). CARE fires
+**once per game**; COLLECT_FERTILIZER fires 61 times and is worth **+$7 total**. The 470 idle actions
+are idle because the base has already done everything reachable from where its units stand -- using
+them would need multi-turn movement, which an external wrapper cannot do safely.
+
+Three wrapper levers are now measured and closed on this base: shed guard (exhausted, 5.5 units/game
+left), sale advance (negative, monotonically), idle work (+$7/game). These tapes are tightly
+optimised; **base selection remains the only lever with real returns.**

@@ -244,6 +244,7 @@ def build_worker(argv: list[str], seed_pool: list | None = None,
         "opt/opponents.py": ROOT / "opt" / "opponents.py",
         "opt/shed_guard.py": ROOT / "opt" / "shed_guard.py",
         "opt/sale_advance.py": ROOT / "opt" / "sale_advance.py",
+        "opt/idle_work.py": ROOT / "opt" / "idle_work.py",
     }
     for name in (WORKER_PANEL if panel else []):
         files[f"opponents/{name}.py"] = ROOT / "opponents" / f"{name}.py"

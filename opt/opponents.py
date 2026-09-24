@@ -89,6 +89,16 @@ def get(name: str):
         import shed_guard
         _cache[name] = shed_guard.wrap(get(base_name), margin=margin, **kw)
         return _cache[name]
+    if name.startswith("idle:"):
+        # "idle:BASE[:opts]" -> BASE + the idle-unit layer (see idle_work.py).
+        # opts joined with "+": c(are), f(ertilizer), w(ater); default care only.
+        parts = name[len("idle:"):].split(":")
+        opts = parts.pop() if len(parts) > 1 and set(parts[-1]) <= set("cfw+,") else ""
+        base_name = ":".join(parts)
+        o = opts.replace(",", "+").split("+") if opts else ["c"]
+        import idle_work
+        _cache[name] = idle_work.wrap(get(base_name), care="c" in o, fert="f" in o, water="w" in o)
+        return _cache[name]
     if name.startswith("adv:"):
         # "adv:BASE:LEAD:MINEVENTS[:opts]" -> BASE + the sale-advance layer
         # (see sale_advance.py). opts joined with "+": u<min_units>, p<min_price>,
