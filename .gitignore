@@ -1,0 +1,21 @@
+# Kaggle API tokens -- NEVER commit
+Secrets.env
+.kaggle/
+
+# Community datasets (8.8 GB, re-downloadable with the kaggle CLI)
+data/
+
+# Experiment outputs: jsonl result dumps, kernel bundles, harvested shards (2 GB)
+runs/*
+!runs/*.py
+!runs/*_cands.txt
+!runs/*_opps.txt
+
+# Public Apache-2.0 agents (134 MB): re-fetch with runs/fetch_out.py / scripts/extract_agents.py
+opponents/
+!opponents/notebooks/.gitkeep
+
+__pycache__/
+*.pyc
+*.pkl
+*.parquet

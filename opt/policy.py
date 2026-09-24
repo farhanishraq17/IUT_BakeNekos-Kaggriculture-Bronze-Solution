@@ -1,0 +1,527 @@
+"""Parameterized Kaggriculture policy: genome -> deterministic agent.
+
+The genome is a flat list of floats. The executor below is FIXED code -- a
+priority scheduler that hands every unit the best-value task it can reach. What
+the search tunes is the economics: crop mix, animal mix, hiring curve, land
+timing, sell floors, harvest ages.
+
+Deliberately stdlib-only and dependency-free so the exact same file runs in the
+local pool, in a Kaggle kernel, and inside the submitted main.py.
+"""
+
+from __future__ import annotations
+
+# ---------------------------------------------------------------- game tables
+CROPS = {  # seed, first_yield_day, max_yield_day, ongoing
+    "WHEAT": (10, 2, 4, False),
+    "CARROT": (20, 2, 3, False),
+    "TOMATO": (50, 8, 8, True),
+    "STRAWBERRY": (100, 10, 10, True),
+    "MELON": (80, 10, 12, False),
+}
+CROP_LIST = ["WHEAT", "CARROT", "TOMATO", "STRAWBERRY", "MELON"]
+ANIMALS = {"GOOSE": ("COOP", 300, "EGG"), "COW": ("PASTURE", 400, "MILK"), "SHEEP": ("PASTURE", 500, "WOOL")}
+ANIMAL_LIST = ["GOOSE", "COW", "SHEEP"]
+PRODUCTS = ["WHEAT", "CARROT", "TOMATO", "STRAWBERRY", "MELON", "EGG", "MILK", "WOOL", "FERTILIZER"]
+BASE = {"WHEAT": 25, "CARROT": 35, "TOMATO": 60, "STRAWBERRY": 120, "MELON": 250,
+        "EGG": 50, "MILK": 160, "WOOL": 200, "FERTILIZER": 100}
+LAND_PRICES = (1000, 2000, 4000)
+SHED_TILES = ((4, 4), (5, 4), (4, 5), (5, 5))
+
+
+# ------------------------------------------------------------------- genome
+# (name, lo, hi). Keep this list append-only: search checkpoints index into it.
+GENOME_SPEC = [
+    ("hire_day0", 0, 12),        # hands hired on day 0
+    ("hire_slope", 0, 1.2),      # extra hands per day
+    ("hire_max", 0, 18),
+    ("hire_cash_frac", 0.0, 0.2),  # never spend more than this fraction of cash on hires
+    ("w_wheat", 0, 1), ("w_carrot", 0, 1), ("w_tomato", 0, 1),
+    ("w_strawberry", 0, 1), ("w_melon", 0, 1),
+    # v50 finishes with 15-19 sheep + 4-8 cows, so the old caps of 8 made the
+    # strongest known composition unreachable.
+    ("n_goose", 0, 25), ("n_cow", 0, 25), ("n_sheep", 0, 25),
+    ("animal_start_day", 0, 12),
+    ("land1_day", 0, 20), ("land2_day", 0, 24), ("land3_day", 0, 28),
+    ("land_cash_buffer", 0, 2500),
+    ("harvest_off_wheat", 0, 2),    # harvest at max_yield_day + this
+    ("harvest_off_carrot", 0, 2),
+    ("harvest_off_melon", 0, 2),
+    ("sell_floor_frac", 0.1, 1.1),  # sell only at >= frac * base price ...
+    ("sell_floor_late", 0.0, 0.8),  # ... relaxing to this by end of season
+    ("sell_chunk", 1, 40),
+    ("travel_cost", 0, 6),          # priority penalty per tile of travel
+    ("p_water", 0, 30), ("p_feed", 0, 30), ("p_harvest", 0, 30),
+    ("p_fert_collect", 0, 30), ("p_care", 0, 30), ("p_plant", 0, 30),
+    ("p_build", 0, 30), ("p_dig", 0, 20), ("p_deliver", 0, 30),
+    ("deliver_at", 1, 40),          # carry this many items before heading to the shed
+    ("wheat_reserve", 0, 40),       # wheat kept in shed for feeding
+    ("fert_use_frac", 0, 1),        # share of fertilizer spent on crops vs sold
+    ("stop_planting_day", 14, 30),
+    # --- v2: adapted from watching the public agents (see opt/analyze.py) ---
+    # APPEND ONLY. Old checkpoints are padded with SEED_GENOME's values for the
+    # new tail, so a resume from a v1 island still works.
+    ("hire_flat", 0, 16),           # hands/day floor -- hiring 10 costs $143, it is never the constraint
+    ("hire_cash_floor", 0, 3000),   # ...but stop hiring if the bank is below this
+    ("yarn_sheep", 0, 8),           # extra sheep wanted per YARN_STORE instance
+    ("milk_cow", 0, 6),             # extra cows per milk-demanding shop
+    ("egg_goose", 0, 6),            # extra geese per egg-demanding shop
+    ("straw_shop_w", 0, 1.5),       # extra strawberry mix weight per strawberry shop
+    ("carrot_flip_day", 20, 29),    # late carrot planting into a town-drained carrot market
+    ("carrot_flip_n", 0, 25),
+    ("wheat_stock", 0, 80),         # wheat held as an asset: the town drains it, so it appreciates
+    ("wheat_sell_mult", 0.8, 2.2),  # ...sell the surplus once price >= base * this
+    ("sell_hour_start", 0, 23),     # sell window opens here (town centre consumes at hour 0)
+    ("sell_hour_span", 1, 24),
+]
+NAMES = [g[0] for g in GENOME_SPEC]
+LO = [g[1] for g in GENOME_SPEC]
+HI = [g[2] for g in GENOME_SPEC]
+N = len(GENOME_SPEC)
+
+
+def pad(g):
+    """Extend a genome from an older, shorter GENOME_SPEC with the current defaults.
+    GENOME_SPEC is append-only precisely so old checkpoints stay usable."""
+    g = list(g)
+    return g if len(g) >= N else g + list(SEED_GENOME[len(g):N])
+
+
+def clamp_genome(g):
+    g = pad(g)
+    return [min(HI[i], max(LO[i], float(v))) for i, v in enumerate(g)]
+
+
+def random_genome(rng):
+    return [rng.uniform(LO[i], HI[i]) for i in range(N)]
+
+
+def as_dict(g):
+    return dict(zip(NAMES, g))
+
+
+# ------------------------------------------------------------------ helpers
+def _dist(a, b):
+    return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
+
+def _step_toward(pos, tgt):
+    x, y = pos
+    tx, ty = tgt
+    if x < tx:
+        return ["EAST"]
+    if x > tx:
+        return ["WEST"]
+    if y < ty:
+        return ["SOUTH"]
+    if y > ty:
+        return ["NORTH"]
+    return None
+
+
+def _quad(x, y):
+    return ("N" if y < 5 else "S") + ("W" if x < 5 else "E")
+
+
+# Which shops create demand for which product. Town demand is what keeps a price
+# off the floor, so production should follow the shop draw, not a fixed plan.
+SHOP_DEMAND = {
+    "BAKERY": ["EGG", "WHEAT"],
+    "PIZZA_SHOP": ["MILK", "TOMATO", "WHEAT"],
+    "BRUNCH_SPOT": ["EGG", "WHEAT", "STRAWBERRY"],
+    "YARN_STORE": ["WOOL"],
+    "ICE_CREAM_SHOP": ["STRAWBERRY", "MILK", "WHEAT"],
+    "PET_CAFE": ["CARROT"],
+    "SMOOTHIE_SHOP": ["STRAWBERRY", "MILK"],
+    "FARMERS_MARKET": ["WHEAT", "CARROT", "TOMATO", "STRAWBERRY"],
+}
+
+
+def make_agent(genome):
+    """genome -> agent(obs) -> action dict."""
+    g = list(genome)
+    if len(g) < N:  # v1 checkpoint: pad the v2 tail with the hand-set defaults
+        g += SEED_GENOME[len(g):N]
+    p = as_dict(clamp_genome(g))
+
+    base_mix = [max(0.0, p["w_" + c.lower()]) for c in CROP_LIST]
+    base_animal = {"GOOSE": int(p["n_goose"]), "COW": int(p["n_cow"]), "SHEEP": int(p["n_sheep"])}
+    land_days = (p["land1_day"], p["land2_day"], p["land3_day"])
+    harvest_off = {"WHEAT": p["harvest_off_wheat"], "CARROT": p["harvest_off_carrot"],
+                   "MELON": p["harvest_off_melon"]}
+
+    def agent(obs):
+        me = obs["farms"][obs["player"]]
+        priv = obs["private"]
+        day, hour, step = obs["day"], obs["hour"], obs["step"]
+        tiles = me["tiles"]
+        money = me["money"]
+        shed = priv["shed"]
+        seeds = priv["seeds"]
+        invs = priv["inventories"]
+        prices = obs["market"]["prices"]
+        units = [me["farmer"]] + list(me["hands"])
+        nu = len(units)
+        last = step >= 700
+
+        # ---- react to the shop draw ----------------------------------------
+        # Each shop instance drains its products from the market for free, which
+        # is the only thing holding a premium price up. Wool floors after 59
+        # units sold with no yarn store, and sustains 400+ with three.
+        shops = obs["town"]["unlocked_shops"] or []
+        n_wool = n_milk = n_egg = n_straw = 0
+        for s in shops:
+            d = SHOP_DEMAND.get(s, ())
+            n_wool += "WOOL" in d
+            n_milk += "MILK" in d
+            n_egg += "EGG" in d
+            n_straw += "STRAWBERRY" in d
+        want_animal = {
+            "GOOSE": int(base_animal["GOOSE"] + p["egg_goose"] * n_egg),
+            "COW": int(base_animal["COW"] + p["milk_cow"] * n_milk),
+            "SHEEP": int(base_animal["SHEEP"] + p["yarn_sheep"] * n_wool),
+        }
+        mix = list(base_mix)
+        mix[CROP_LIST.index("STRAWBERRY")] += p["straw_shop_w"] * n_straw
+        tot = sum(mix) or 1.0
+        mix = [m / tot for m in mix]
+
+        # ---------------------------------------------------------- market
+        market = []
+        # Hiring happens at the top of the day; hands only pay off if they can work.
+        if hour == 0 and day < 29:
+            # Labour is the binding constraint and it is absurdly cheap: 11 units
+            # for $143/day. A pure cash-fraction rule collapses hiring exactly when
+            # a bad day makes more labour the way out, so take a flat floor too.
+            n = int(min(p["hire_max"], max(p["hire_flat"],
+                                           p["hire_day0"] + p["hire_slope"] * day)))
+            if money < p["hire_cash_floor"]:
+                n = int(min(n, p["hire_day0"]))
+            budget = max(money * p["hire_cash_frac"], min(money * 0.5, 200.0))
+            cost, hires, fa, fb = 0, 0, 1, 1
+            for _ in range(n):
+                if cost + fa > budget:
+                    break
+                cost += fa
+                fa, fb = fb, fa + fb
+                hires += 1
+            market += [["HIRE"]] * hires
+
+        n_extra = len(me["unlocked_quadrants"]) - 1
+        if n_extra < 3 and day >= land_days[n_extra] and money >= LAND_PRICES[n_extra] + p["land_cash_buffer"]:
+            market.append(["BUY_LAND"])
+
+        # Census of what is on the farm right now.
+        empty, weeds, plants, structs, animals = [], [], [], [], []
+        n_crop = dict.fromkeys(CROP_LIST, 0)
+        n_animal = dict.fromkeys(ANIMAL_LIST, 0)
+        for y, row in enumerate(tiles):
+            for x, t in enumerate(row):
+                if t is None:
+                    empty.append((x, y))
+                elif t == "LOCKED":
+                    continue
+                elif t["kind"] == "WEED":
+                    weeds.append((x, y))
+                elif t["kind"] == "PLANT":
+                    plants.append((x, y, t))
+                    n_crop[t["crop"]] += 1
+                elif "animal" in t:
+                    animals.append((x, y, t))
+                    n_animal[t["animal"]] += 1
+                else:
+                    structs.append((x, y, t))
+
+        # Seeds for the late carrot flip (bought a day early -- they are useless
+        # if they arrive after the tile is free).
+        if p["carrot_flip_day"] - 1 <= day <= 27 and p["carrot_flip_n"] >= 1 \
+                and prices["CARROT"] >= BASE["CARROT"] * 1.15:
+            need = int(p["carrot_flip_n"]) - seeds.get("CARROT", 0)
+            if need > 0 and money > 20 * need:
+                market.append(["BUY_SEED", "CARROT", need])
+
+        # Seeds: keep enough to fill the empty tiles we intend to plant.
+        if day < p["stop_planting_day"]:
+            slots = len(empty)
+            for i, c in enumerate(CROP_LIST):
+                want = int(slots * mix[i]) + 1
+                have = seeds.get(c, 0)
+                cost = CROPS[c][0]
+                if have < want and money > cost * 2:
+                    n = min(want - have, max(1, int((money * 0.25) // cost)))
+                    if n > 0:
+                        market.append(["BUY_SEED", c, n])
+
+        # Animals: buy only what we can still house and afford.
+        # Animals are the economy, but an animal with nowhere to live is dead
+        # capital and buying a herd you cannot feed is how the bank hits zero.
+        # Gate on empty housing that already exists, and keep a feed reserve.
+        free_house = {"COOP": 0, "PASTURE": 0}
+        for _x, _y, t in structs:
+            free_house[t["kind"]] += 1
+        # Keep several days of feed money back before adding to the herd. A herd
+        # you cannot feed is worse than no herd: the animals escape and the
+        # purchase price is gone with them.
+        reserve = prices["WHEAT"] * sum(n_animal.values()) * 5 + 300
+        if day >= p["animal_start_day"]:
+            for a_name in ANIMAL_LIST:
+                kind, cost, _prod = ANIMALS[a_name]
+                need = want_animal[a_name] - n_animal[a_name] - shed.get(a_name, 0)
+                room = free_house[kind] - sum(shed.get(o, 0) for o in ANIMAL_LIST
+                                              if ANIMALS[o][0] == kind)
+                affordable = int((money - reserve) // cost)
+                n = min(need, room, affordable)
+                if n >= 1:
+                    market.append(["BUY_ANIMAL", a_name, int(n)])
+                    free_house[kind] -= int(n)
+                    break
+
+        # Feed stock AND inventory: animals eat one wheat a day, and wheat is the
+        # one product the town drains hard while its glut curve is log-flat, so it
+        # appreciates. Buying it early is a position, not just a feed run.
+        n_animals_total = sum(n_animal.values())
+        shed_used = sum(shed.values())
+        keep_wheat = n_animals_total + p["wheat_reserve"]
+        want_wheat = keep_wheat + (p["wheat_stock"] if day < 24 else 0)
+        have_wheat = shed.get("WHEAT", 0)
+        if have_wheat < want_wheat:
+            # Buy what we CAN afford, not all-or-nothing. Skipping the whole order
+            # because the full amount is unaffordable starves the herd, and an
+            # animal missing two feeds escapes permanently -- that one branch
+            # turned a $20k farm into $1k by day 29.
+            need = int(min(want_wheat - have_wheat, 100 - shed_used,
+                           money // max(1, prices["WHEAT"])))
+            if need > 0:
+                market.append(["BUY_PRODUCT", "WHEAT", need])
+
+        # Selling. Two rules the public agents both follow: a floor that relaxes
+        # as the season ends (unsold stock scores zero), and a preferred hour
+        # window -- the town consumes at hour 0 and every 4th turn, so selling
+        # just after a tick gets the restored price.
+        frac = p["sell_floor_frac"] + (p["sell_floor_late"] - p["sell_floor_frac"]) * (day / 29.0)
+        h0 = int(p["sell_hour_start"])
+        in_window = ((hour - h0) % 24) < p["sell_hour_span"]
+        overflowing = shed_used >= 92 and hour >= 20  # end-of-day drop discards the excess
+        if in_window or overflowing or last or day >= 29:
+            for item in PRODUCTS:
+                have = shed.get(item, 0)
+                if have <= 0:
+                    continue
+                if item == "WHEAT":
+                    # Only sell wheat above the feed reserve, and only once the
+                    # town's draw has actually pushed the price up.
+                    have -= keep_wheat
+                    if not (last or overflowing) and prices[item] < BASE[item] * p["wheat_sell_mult"]:
+                        continue
+                elif item == "FERTILIZER":
+                    have -= int(shed.get("FERTILIZER", 0) * p["fert_use_frac"])
+                if have <= 0:
+                    continue
+                if last or day >= 29 or overflowing or prices[item] >= BASE[item] * frac:
+                    market.append(["SELL", item, have if last else int(min(have, p["sell_chunk"]))])
+
+        market = market[:10]
+
+        # ----------------------------------------------------------- tasks
+        # (priority, target_tile, op) -- op is resolved once a unit stands there.
+        tasks = []
+        add = tasks.append
+        for x, y, t in plants:
+            age = day - t["planted_day"]
+            cd = CROPS[t["crop"]]
+            if not t["watered_today"]:
+                # Urgency: a second unwatered day destroys the tile.
+                add((p["p_water"] * (3.0 if t["consecutive_unwatered"] >= 1 else 1.0), (x, y), ["WATER"]))
+            if t["yield_units"] > 0 and age >= cd[1]:
+                ready = cd[3] or age >= cd[2] + harvest_off.get(t["crop"], 0)
+                if ready or last:
+                    add((p["p_harvest"], (x, y), ["HARVEST"]))
+        for x, y, t in animals:
+            if not t["fed_today"]:
+                add((p["p_feed"] * (3.0 if t["consecutive_unfed"] >= 1 else 1.0), (x, y), ["FEED"]))
+            if t["yield_units"] > 0:
+                add((p["p_harvest"], (x, y), ["HARVEST"]))
+            if t["fertilizer_available"]:
+                add((p["p_fert_collect"], (x, y), ["COLLECT_FERTILIZER"]))
+            if not t["cared_today"] and day < 28:
+                add((p["p_care"], (x, y), ["CARE"]))
+        for x, y in weeds:
+            add((p["p_dig"], (x, y), ["DIG"]))
+
+        # Empty tiles: build housing for animals we own, otherwise plant.
+        housed = {"COOP": 0, "PASTURE": 0}
+        for _x, _y, t in structs:
+            housed[t["kind"]] += 1
+        # Only build housing we can plausibly fill: an empty coop is a dead tile.
+        # Housing FOLLOWS purchases, it does not lead them. An empty structure is
+        # a dead tile plus a wasted build action, and a large want_animal target
+        # would otherwise carpet the farm in pastures on day 0 with no income.
+        def _ahead(cost):
+            return 1 + int(max(0, (money - 800) // (cost * 3)))
+
+        need_coop = max(0, min(want_animal["GOOSE"] - n_animal["GOOSE"] - housed["COOP"],
+                               shed.get("GOOSE", 0) + _ahead(300) - housed["COOP"]))
+        need_past = max(0, min(want_animal["COW"] + want_animal["SHEEP"]
+                               - n_animal["COW"] - n_animal["SHEEP"] - housed["PASTURE"],
+                               shed.get("COW", 0) + shed.get("SHEEP", 0)
+                               + _ahead(400) - housed["PASTURE"]))
+        empty.sort(key=lambda q: _dist(q, (4, 4)))
+        ei = 0
+        for _ in range(min(need_coop, len(empty))):
+            add((p["p_build"], empty[ei], ["BUILD_COOP"]))
+            ei += 1
+        for _ in range(min(need_past, max(0, len(empty) - ei))):
+            add((p["p_build"], empty[ei], ["BUILD_PASTURE"]))
+            ei += 1
+        # Late carrot flip: carrot's scarcity curve is a hinge, so once the town
+        # has drained it the price runs away ($70 at 450 units, $385 at 900).
+        # Carrot matures in 3 days, so it can be planted after everything else is
+        # already committed. v50 does exactly this on day 25-28.
+        flip = (day >= p["carrot_flip_day"] and day <= 28
+                and prices["CARROT"] >= BASE["CARROT"] * 1.15)
+        if flip:
+            for q in empty[ei:ei + int(p["carrot_flip_n"])]:
+                add((p["p_plant"] + 3.0, q, ["PLANT", "CARROT"]))
+                ei += 1
+
+        if day < p["stop_planting_day"] and not flip:
+            for q in empty[ei:]:
+                # Plant the crop we are furthest below target on.
+                best, best_gap = None, -1e9
+                for i, c in enumerate(CROP_LIST):
+                    if seeds.get(c, 0) <= 0:
+                        continue
+                    gap = mix[i] * max(1, len(plants) + 1) - n_crop[c]
+                    if gap > best_gap:
+                        best, best_gap = c, gap
+                if best is None:
+                    break
+                add((p["p_plant"], q, ["PLANT", best]))
+                n_crop[best] += 1
+
+        tasks.sort(key=lambda t: -t[0])
+
+        # ------------------------------------------------------- assignment
+        acts = [None] * nu
+        busy = [False] * nu
+        planted_this_turn = {}
+        # NEVER mutate `shed`: fastsim hands agents the live state, so decrementing
+        # it here would hand us free goods and silently corrupt every result.
+        taken = {}
+
+        def in_shed(item):
+            return shed.get(item, 0) - taken.get(item, 0)
+
+        # Units carrying stock should bank it; the shed only accepts from its four
+        # access tiles, and end-of-day drops are capped by shedCapacity.
+        shed_used = sum(shed.values())
+        for i in range(nu):
+            inv = invs[i] if i < len(invs) else {}
+            carried = sum(inv.values())
+            if carried >= p["deliver_at"] or (last and carried):
+                tgt = min(SHED_TILES, key=lambda s: _dist(units[i], s))
+                if tuple(units[i]) in SHED_TILES:
+                    acts[i] = ["DROP"]
+                else:
+                    acts[i] = _step_toward(units[i], tgt) or ["PASS"]
+                busy[i] = True
+
+        # Animals in the shed need carrying to a free structure; wheat needs
+        # carrying to hungry animals. Both are PICKUP-then-walk errands.
+        free_struct = [(x, y, t) for x, y, t in structs]
+        for i in range(nu):
+            if busy[i]:
+                continue
+            inv = invs[i] if i < len(invs) else {}
+            held_animal = next((a for a in ANIMAL_LIST if inv.get(a, 0) > 0), None)
+            if held_animal:
+                want_kind = ANIMALS[held_animal][0]
+                cand = [(x, y) for x, y, t in free_struct if t["kind"] == want_kind]
+                if cand:
+                    tgt = min(cand, key=lambda q: _dist(units[i], q))
+                    if tuple(units[i]) == tgt:
+                        acts[i] = ["PLACE", held_animal]
+                        free_struct = [s for s in free_struct if (s[0], s[1]) != tgt]
+                    else:
+                        acts[i] = _step_toward(units[i], tgt) or ["PASS"]
+                    busy[i] = True
+                    continue
+            if tuple(units[i]) in SHED_TILES and not busy[i]:
+                pending = next((a for a in ANIMAL_LIST if in_shed(a) > 0), None)
+                if pending and any(t["kind"] == ANIMALS[pending][0] for _x, _y, t in free_struct):
+                    acts[i] = ["PICKUP", pending, 1]
+                    taken[pending] = taken.get(pending, 0) + 1
+                    busy[i] = True
+                    continue
+                unfed = sum(1 for _x, _y, t in animals if not t["fed_today"])
+                if unfed and inv.get("WHEAT", 0) < unfed and in_shed("WHEAT") > 0:
+                    n = int(min(unfed, in_shed("WHEAT")))
+                    acts[i] = ["PICKUP", "WHEAT", n]
+                    taken["WHEAT"] = taken.get("WHEAT", 0) + n
+                    busy[i] = True
+                    continue
+
+        for prio, tgt, op in tasks:
+            free = [i for i in range(nu) if not busy[i]]
+            if not free:
+                break
+            i = min(free, key=lambda j: _dist(units[j], tgt))
+            d = _dist(units[i], tgt)
+            if prio - p["travel_cost"] * d <= 0:
+                continue
+            if op[0] == "FEED":
+                inv = invs[i] if i < len(invs) else {}
+                if inv.get("WHEAT", 0) <= 0:
+                    continue
+            if op[0] == "PLANT":
+                c = op[1]
+                if planted_this_turn.get(c, 0) + 1 > seeds.get(c, 0):
+                    continue
+                planted_this_turn[c] = planted_this_turn.get(c, 0) + 1
+            acts[i] = op if d == 0 else (_step_toward(units[i], tgt) or ["PASS"])
+            busy[i] = True
+
+        for i in range(nu):
+            if acts[i] is None:
+                acts[i] = ["PASS"]
+
+        return {"farmer": acts[0], "hands": acts[1:], "market": market}
+
+    return agent
+
+
+# A hand-seeded starting point: geese + wheat feed + melons, hire hard, sell above
+# 60% of base. Gives the search somewhere sane to begin instead of pure noise.
+SEED_GENOME = [
+    6, 0.5, 12, 0.05,            # hiring
+    0.35, 0.10, 0.05, 0.0, 0.50,  # crop mix: wheat (feed) + melon
+    10, 0, 0, 2,                 # geese only, from day 2
+    6, 12, 20, 600,              # land
+    0, 0, 0,                     # harvest offsets
+    0.65, 0.25, 20,              # sell floors / chunk
+    1.2,                         # travel cost
+    20, 20, 14, 16, 8, 6, 9, 4, 7,  # task priorities
+    12, 12, 0.5, 26,
+    # v2 tail. Only the two hiring params are switched on by default -- ablation
+    # showed those help at the v1 optimum ($79.6k vs $72.8k) while the shop
+    # bonuses and the wheat position need co-optimization to pay off, and start
+    # at zero so a seeded search begins from known-good v1 behaviour.
+    10, 400,        # hire ~10/day, stop hiring below $400
+    0, 0, 0,        # yarn->sheep, milk->cow, egg->goose bonuses: search raises these
+    0,              # strawberry weight per strawberry shop
+    25, 0,          # carrot flip day set, count 0 until search turns it on
+    0, 0.8,         # no wheat position; sell wheat above 0.8x base
+    0, 24,          # sell window: any hour
+]
+
+if __name__ == "__main__":
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "engine"))
+    import fastsim
+
+    assert len(SEED_GENOME) == N, f"SEED_GENOME has {len(SEED_GENOME)} values, spec wants {N}"
+    a = make_agent(SEED_GENOME)
+    for seed in (1, 2, 3):
+        m = fastsim.run(a, fastsim.REF.starter_agent, seed=seed)
+        print(f"seed {seed}: seed_genome={m[0]:10,.0f}  starter={m[1]:10,.0f}  errors={fastsim.run.errors}")
