@@ -570,3 +570,27 @@ Status: all four wrapper/meta levers are now measured and closed on the current 
 exhausted, sale advance negative, idle work +$7, routing impossible). **Base selection is the only
 remaining lever**, so the loop is now survey-driven: watch the Code tab, screen new builds with
 runs/discard_probe.py, and ride the best base.
+
+## 2026-09-25 (loop): guard settled definitively; cheap-first refuted
+
+**Guard vs unguarded Frontier-0923, ALL samples pooled: +1.72pp, z=18.78, 98,671 paired games.**
+Per source, the lesson about sample size is stark:
+- farm samples (n=7.7k-31k): +1.24, +1.25, +1.38, +2.50, +3.39 -- every one positive
+- small local (n=320-900): +0.31, +1.57, +3.11, **-1.41, -2.33** -- sign flips freely
+
+Three separate sub-1k samples this cycle pointed the wrong way (guard:shepherds +4.00pp z=3.03 at
+n=375 which settled at -3.50pp over 88k; the two negatives above). **Under ~2k paired cells is
+unmeasured.** Sample size, not cleverness, is what decides these questions.
+
+**`cf1`: cheap-first sell ordering REFUTED** (153,359 games). Hypothesis: the guard dumps
+highest-price stock first, but premium goods hit the $1 floor after 59-76 units and never recover,
+while WHEAT/EGG sit on a flat log glut curve -- so clearing the cap with bulk should preserve more
+value. Result: `:L` (cheap first) is **-1.89pp (z=-14.61)** at margin 14, -5.12 at 20, -10.08 at 30.
+Why the reasoning failed: the guard sells a fixed number of *units* to clear the cap, so cheap stock
+moves the same unit count for far less cash, and the small excesses never approach the premium floor.
+**Highest-price-first is correct; the shipped config is now validated against its opposite.**
+
+Also killed this cycle: `c-icefire-0925` (leoprovorov "A Song of Ice and Fire"), 6.4% vs the champion
+over 127,803 games. And a caveat on the screen: the discard probe read only 1.0 unit/game for icefire
+yet the guard still added +10.4pp to it, so the probe predicts guard value on *strong* bases only --
+use it as a filter, not a veto.

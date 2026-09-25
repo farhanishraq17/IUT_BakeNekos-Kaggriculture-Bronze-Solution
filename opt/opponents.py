@@ -86,6 +86,8 @@ def get(name: str):
                 kw["fert_cutoff"] = int(o[1:])
             elif o[0] == "p":
                 kw["min_price"] = int(o[1:])
+            elif o[0] == "L":
+                kw["cheap_first"] = True
         import shed_guard
         _cache[name] = shed_guard.wrap(get(base_name), margin=margin, **kw)
         return _cache[name]

@@ -22,6 +22,7 @@ def _get(obs, key, default=None):
 
 
 def wrap(base_agent, margin: int = 10, min_price: int = 2, hour_min: int = 0, wheat_keep: int = 0,
+         cheap_first: bool = False,
          skip=(), seed_cutoff: int = 10**9, fert_cutoff: int = 10**9):
     """margin: how far below shedCapacity to start proactively selling (higher =
     more proactive, matches the round-1 _SR_MARGIN/_Y_MARGIN convention where a
@@ -38,7 +39,7 @@ def wrap(base_agent, margin: int = 10, min_price: int = 2, hour_min: int = 0, wh
             action = _late_filter(observation, action, seed_cutoff, fert_cutoff)
             if int(_get(observation, "hour", 0) or 0) < hour_min:
                 return action
-            return _guard(observation, action, margin, min_price, wheat_keep, skip)
+            return _guard(observation, action, margin, min_price, wheat_keep, skip, cheap_first)
         except Exception:
             return action
 
@@ -63,7 +64,7 @@ def _late_filter(obs, action, seed_cutoff, fert_cutoff):
     return dict(action, market=kept)
 
 
-def _guard(obs, action, margin, min_price, wheat_keep=0, skip=()):
+def _guard(obs, action, margin, min_price, wheat_keep=0, skip=(), cheap_first=False):
     if not isinstance(action, dict):
         return action
     player = _get(obs, "player")
@@ -111,7 +112,12 @@ def _guard(obs, action, margin, min_price, wheat_keep=0, skip=()):
         ((int(prices.get(it, 0)), it, int(shed.get(it, 0))) for it in PRODUCTS
          if it not in already_selling and it not in skip and int(shed.get(it, 0)) > 0
          and int(prices.get(it, 0)) >= min_price),
-        reverse=True,
+        # Default: dump the most valuable stock first (most cash per unit now).
+        # cheap_first inverts it: premium goods (WOOL 59 / MILK 76 / STRAWBERRY 62
+        # units to the $1 floor) crash permanently once dumped, while WHEAT and EGG
+        # sit on a log glut curve and barely move -- so clearing the cap with bulk
+        # may preserve far more value than clearing it with premium.
+        reverse=not cheap_first,
     )
     extra = []
     need = excess
