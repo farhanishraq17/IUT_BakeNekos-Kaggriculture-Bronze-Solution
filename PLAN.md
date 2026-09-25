@@ -542,3 +542,31 @@ them would need multi-turn movement, which an external wrapper cannot do safely.
 Three wrapper levers are now measured and closed on this base: shed guard (exhausted, 5.5 units/game
 left), sale advance (negative, monotonically), idle work (+$7/game). These tapes are tightly
 optimised; **base selection remains the only lever with real returns.**
+
+## 2026-09-25 (loop): complement settled, and cross-family routing is IMPOSSIBLE
+
+**`sh1`, 88,081 games** (farm seeds 3.1M + local 3.0M/3.2M), paired vs the champion:
+guard:c-shepherds-0924:14 **-3.50pp (z=-11.92)**, margin 20 -3.56, margin 10 -4.65, unguarded
+shepherds -9.73, unguarded frontier-0923 -1.38 (z=-5.69). **The champion holds.**
+
+A local arm had read guard:shepherds **+4.00pp (z=3.03) at n=375** -- pure noise, and the third time
+this project has seen a sub-1k paired sample flip sign. The second local seed range put it at -4pp and
+the pooled farm settled it. **Treat anything under ~2k paired cells as unmeasured.**
+
+**Two-agent oracle: 95.0% vs the champion's 89.8% = +5.2pp headroom**, the biggest remaining prize:
+the two agents disagree on 12.9% of games and shepherds wins 1,625 of the champion's 3,182 losses
+(they are different families, so their losses are genuinely uncorrelated -- unlike the same-family
+routing tried on 09-21).
+
+**But it is unreachable.** `runs/divergence.py`: the champion and guard:shepherds first act differently
+at **step 0** (min = median = max = 0). A cross-family router can only switch while both candidates
+still emit identical actions; after that the chosen tape has missed moves it assumes it made. At step 0
+there is nothing to condition on -- both farms are identical, no shops unlocked, no opponent action
+seen. So the oracle needs information that only exists after the last safe switch point.
+**This closes routing for good**, and gives the mechanism behind the earlier "routing is worthless"
+result: not a weak signal, an information-ordering impossibility.
+
+Status: all four wrapper/meta levers are now measured and closed on the current base (shed guard
+exhausted, sale advance negative, idle work +$7, routing impossible). **Base selection is the only
+remaining lever**, so the loop is now survey-driven: watch the Code tab, screen new builds with
+runs/discard_probe.py, and ride the best base.
