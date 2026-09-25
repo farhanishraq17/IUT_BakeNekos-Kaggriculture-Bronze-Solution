@@ -594,3 +594,31 @@ Also killed this cycle: `c-icefire-0925` (leoprovorov "A Song of Ice and Fire"),
 over 127,803 games. And a caveat on the screen: the discard probe read only 1.0 unit/game for icefire
 yet the guard still added +10.4pp to it, so the probe predicts guard value on *strong* bases only --
 use it as a filter, not a veto.
+
+## 2026-09-25: SUBMITTED 56555247 -- guard margin 14 + never sell MILK
+
+First real gain since the guard itself. Mechanism, not a knob sweep: MILK hits the $1 floor after
+~76 units and never recovers (town demand is the only thing holding it up), so spending milk to clear
+the 100-item shed cap destroys more value than dumping bulk. **The effect is item-specific**, which is
+what makes it credible: skipping STRAWBERRY is -1.84pp (z=-8.96), WOOL +0.14 and MELON 0.00, only MILK pays.
+
+| sample | delta | z | games |
+|---|---|---|---|
+| px1 discovery (seeds 3.9M/4.0M) | +0.51pp | 2.91 | 51,150 |
+| **mk1 farm, FRESH seeds 4.1M** | **+0.64pp** | **9.47** | **181,478** |
+| pooled | +0.73pp | 11.50 | 204,673 |
+
+margin 18 + sMILK is equivalent (+0.62 z=7.60); adding sWOOL dilutes it (+0.37). Shipped margin 14 + sMILK.
+
+`scripts/bake_guard.py` gained `--skip`: it inlines its own guard copy and previously supported only
+margin, so a skip-list submission would have silently shipped the WRONG agent. Baked file verified
+identical to the runtime variant on 3 seeds; official runner 720/720 DONE/DONE; 34 Apache-2.0 notices intact.
+
+**Latency note:** this build measures worst-case 182 ms, but the already-live champion measures 191 ms
+on the same idle machine -- it is a property of the Frontier base, not of our layer, and the earlier
+"45-48 ms" readings were the unrepresentative ones. Kaggle's limit is 1000 ms.
+
+Tracked pair is now 56555247 (milk-skip) + 56532146 (unguarded control), strictly better than the pair
+it replaced. Also closed this cycle: c-harvest-ledger-0925 -12.40pp and c-shepherds-0925 -8.02pp over
+162,374 games (harvest-ledger's $198k-vs-starter headline was meaningless -- that measures farming an
+empty market, not winning a contested one).

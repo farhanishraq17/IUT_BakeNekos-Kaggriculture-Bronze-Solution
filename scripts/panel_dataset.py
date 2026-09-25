@@ -37,6 +37,7 @@ PANEL = [
     "c-masterhybrid-2965", "c-shepherds-0924", "c-harvest-ledger-0924", "c-pop-robust-0924",
     "c-pioneers-c2", "c-cha22",
     "c-evgen-0924", "c-utils-v1", "c-icefire-0925",
+    "c-harvest-ledger-0925", "c-shepherds-0925",
 ]
 
 

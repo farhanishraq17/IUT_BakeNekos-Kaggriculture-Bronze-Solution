@@ -32,6 +32,9 @@ def _guard_get(obs, key, default=None):
     return obs[key] if isinstance(obs, dict) else getattr(obs, key, default)
 
 
+_GUARD_SKIP = {skip!r}   # items never sold by the guard (see PLAN.md)
+
+
 def _guard_apply(obs, action, margin={margin}, min_price=2):
     if not isinstance(action, dict):
         return action
@@ -71,7 +74,8 @@ def _guard_apply(obs, action, margin={margin}, min_price=2):
     prices = market.get("prices", {{}})
     cands = sorted(
         ((int(prices.get(it, 0)), it, int(shed.get(it, 0))) for it in _GUARD_PRODUCTS
-         if it not in already_selling and int(shed.get(it, 0)) > 0 and int(prices.get(it, 0)) >= min_price),
+         if it not in already_selling and it not in _GUARD_SKIP
+         and int(shed.get(it, 0)) > 0 and int(prices.get(it, 0)) >= min_price),
         reverse=True,
     )
     extra = []
@@ -110,12 +114,15 @@ def main() -> int:
     ap.add_argument("base")
     ap.add_argument("margin", type=int)
     ap.add_argument("--out", required=True)
+    ap.add_argument("--skip", default="", help="comma list of items the guard must never sell")
     args = ap.parse_args()
     base_path = Path(args.base)
     if not (base_path.suffix == ".py" and base_path.exists()):
         base_path = ROOT / "opponents" / f"{args.base}.py"
     src = base_path.read_bytes()
-    footer = FOOTER_TMPL.format(when=time.strftime("%Y-%m-%d"), margin=args.margin).encode("utf-8")
+    skip = tuple(x for x in args.skip.replace("+", ",").split(",") if x)
+    footer = FOOTER_TMPL.format(when=time.strftime("%Y-%m-%d"), margin=args.margin,
+                               skip=skip).encode("utf-8")
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_bytes(src + footer)
