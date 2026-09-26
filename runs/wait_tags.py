@@ -8,7 +8,9 @@ acc = kfarm.accounts()
 while True:
     left = []
     for tag in tags:
-        jobs = [j for j in kfarm.load_jobs() if j.get("kind") == tag]
+        # only shards that actually launched: a push that hit the 5-session cap
+        # never produces a kernel, so waiting on it would poll forever.
+        jobs = [j for j in kfarm.load_jobs() if j.get("kind") == tag and j.get("ok")]
         with ThreadPoolExecutor(12) as ex:
             st = list(ex.map(lambda j: kfarm.status(j["alias"], acc[j["alias"]][1], j["ref"]), jobs))
         c = Counter(st)

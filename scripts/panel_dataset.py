@@ -38,6 +38,9 @@ PANEL = [
     "c-pioneers-c2", "c-cha22",
     "c-evgen-0924", "c-utils-v1", "c-icefire-0925",
     "c-harvest-ledger-0925", "c-shepherds-0925",
+    # 2026-09-26: lineages the panel was MISSING. shop-router beat the tetsutani
+    # family 98.1% and was not in the opponent field at all.
+    "c-shoprouter-v7", "c-v49", "pipe-7-wheat-microstructure", "c-v54-productive",
 ]
 
 

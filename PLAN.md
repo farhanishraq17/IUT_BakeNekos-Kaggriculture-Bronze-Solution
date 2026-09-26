@@ -622,3 +622,42 @@ Tracked pair is now 56555247 (milk-skip) + 56532146 (unguarded control), strictl
 it replaced. Also closed this cycle: c-harvest-ledger-0925 -12.40pp and c-shepherds-0925 -8.02pp over
 162,374 games (harvest-ledger's $198k-vs-starter headline was meaningless -- that measures farming an
 empty market, not winning a contested one).
+
+## 2026-09-26: WHO WE ACTUALLY PLAY (live replay forensics) + rock-paper-scissors
+
+Prompted by the user asking why old notebooks still show 2689/2550/2467. **Those badges are frozen at
+submission time.** v43-local-confirmed (2550.5) is byte-identical (sha 919fc1d6) to c-utils-v1, which
+wins **3.1%** against today's field; v49 (2467.0) wins 22.5%; shop-router (2689.9) wins 48.4%.
+Drift test settles it: our own byte-identical resubmissions scored 2383->1809 and 2478->1850.
+
+**PANEL BLIND SPOT, now fixed.** shop-router-v7 was missing from the opponent field entirely, despite
+CLAUDE.md recording it as the tetsutani family's 98.1% nemesis. Added it plus pipe-7, v49, v54-productive.
+`broad` (339,857 games, 16 lineages): champion **93.7%**, frontier-0923 93.1%, shepherds-0925 85.7%,
+masterhybrid 78.8%, guard:shoprouter 53.3%, shoprouter 48.4%, v49 22.5%, utils/v43 3.1%.
+The champion is NOT overfitted to relatives -- it scores *higher* on the broad panel than the narrow one.
+
+**But the meta is rock-paper-scissors** (`runs/h2h.py`, direct head-to-head, both seats):
+- shop-router beats our champion **92.5%** (6W-74L) and beats masterhybrid 100%, frontier-0923 91.7%
+- Herd-Safe lineage (shepherds-0925, dmitrii-2700) beats shop-router **95-100%**
+- our champion beats Herd-Safe 77.5% (57.5% guarded)
+A single agent cannot cover this; the tracked PAIR can. Submitted 56558912 (Frontier corner) +
+56558917 (Herd-Safe corner, guard-baked) as a deliberately cross-lineage pair.
+
+**`runs/opp_id.py` -- what our live opponents actually run** (30 replays, match depth 400 turns;
+120 is useless because the lineage shares one tape until the router branches at step 144):
+masterhybrid-lineage 16, frontier-0923 7, tetsutani 2, cha22 1, unidentified 4. **shop-router: ZERO.**
+So the blind spot is not being exploited live, and 23/30 opponents share OUR lineage.
+
+**The anomaly that reframes everything:** our champion beats the *public* versions of those agents
+100/100/100/91.7%, predicting ~99.7% vs the observed mix -- but we win **43% (13/30) live**. Median
+first divergence from the public base is **step 150**, right after the router branch. The field is not
+running public files; it is running the same base plus their own private layers, exactly like us.
+We are mid-crowd among forks of one agent, and our measured edge over the bare base is only ~+2.3pp.
+
+**Hypothesis raised and KILLED before building anything:** HIRE was the top op at divergence points
+(96), suggesting winners out-hire the base. Measured (`runs/hire_stats.py`): **275.8 hires/game on both
+sides, identical** -- it ranks high only because HIRE is frequent. No wrapper built.
+
+**Where their edge sits** (`opt/live_gap.py`, mean revenue advantage in games we lose): WOOL **+$243**,
+CARROT +$95, STRAWBERRY +$82, total ~$420 against a ~$550 median loss margin. No single product
+explains it; these are coin flips between near-identical agents.

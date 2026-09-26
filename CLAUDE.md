@@ -11,6 +11,30 @@ equals a +50k win. Final leaderboard is a Bradley-Terry tournament over your **l
 - **Ratings drift down as the field strengthens: never compare ratings from different days.** The
   byte-identical file that scored 2583.1 on 09-21 scored 2192.5 on 09-23. Compare agents at the same age.
 
+## DAILY RITUAL (do this every session, before anything else)
+
+The leaderboard moves every day on new public features. Falling behind by one day has already cost
+us the top spot in our own panel twice.
+
+```bash
+python - <<'EOF'   # or: kaggle kernels list --competition kaggriculture --sort-by dateRun --csv
+import sys, subprocess, csv, io; sys.path.insert(0,"scripts"); import kfarm
+tok = kfarm.accounts()["ISHRAQ"][1]; env = kfarm.env_for("ISHRAQ", tok); env["PYTHONIOENCODING"]="utf-8"
+r = subprocess.run(["kaggle","kernels","list","--competition","kaggriculture","--sort-by","dateRun",
+                    "--page-size","50","--csv"], capture_output=True, text=True, encoding="utf-8", env=env)
+print(r.stdout)
+EOF
+python runs/fetch_out.py <owner/slug> ...      # the EXACT submitted file, not notebook source
+sha256sum runs/newout/*/main.py                # hash-dedupe: 4 notebooks have shipped ONE file
+python runs/smoke.py <name>                    # loads + one game vs starter
+python runs/discard_probe.py <name> <opps> <seed> <n>   # does it leak? -> is the guard worth testing
+python scripts/panel_dataset.py                # push the panel to all accounts before a farm run
+```
+
+**Do not judge a new build by its $-vs-starter figure.** harvest-ledger-0925 posted $198,166 (the
+highest ever measured) and lost to us by 12.4pp over 162k games. Money vs a passive opponent measures
+farming an empty market, not winning a contested one.
+
 ## Ground truth
 
 The **engine source is the spec**, not the docs. Pinned copy: `engine/kaggriculture_ref.py`
