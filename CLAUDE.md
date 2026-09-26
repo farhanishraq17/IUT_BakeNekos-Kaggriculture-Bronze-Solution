@@ -141,10 +141,13 @@ Community datasets (downloaded to `data/`, gitignored):
   ratings (`episodes.csv`, `agents.csv`, `teams.csv`). Replays are 20+ GB; not downloaded.
 
 Current best public agents — **this list goes stale in ~24 h; re-survey daily.**
-2026-09-24 (farm `rr2`, 113,378 games): **c-frontier-0923 89.8%** · frontier-0922 74.5% ·
-v15stack / shepherds-ledger / pop-robust / late-v16 ~67% · herdsafe-v3 66.3% · harvest-ledger-0923 43.7% ·
-dmitrii-2700 43.0% · **c-tetsutani-0921 27.8%** · thomas-2944 23.1%.
+2026-09-26 (farm `broad`, 339,857 games, 16 lineages): **guard:c-frontier-0923:14:sMILK (ours) 93.7%** ·
+c-frontier-0923 93.1% · c-shepherds-0925 85.7% · c-masterhybrid-2965 78.8% · guard:shoprouter 53.3% ·
+c-shoprouter-v7 48.4% · c-v49 22.5% · c-utils-v1 (= v43-local-confirmed) 3.1%.
 The 09-21 ranking (koshinm 79.6%, tetsutani 76.9%) is obsolete: both are now bottom of the field.
+
+**Notebook score badges are frozen at submission time and mean nothing today.** v43 shows 2550.5 and
+wins 3.1%; v49 shows 2467.0 and wins 22.5%; shop-router shows 2689.9 and wins 48.4%.
 
 **Evaluation rule learned the hard way: the opponent field must be fixed and disjoint from the
 candidate list.** Including a candidate's own base as an opponent credits the variant for beating its
@@ -255,8 +258,8 @@ Measured, not assumed.
 | Local | 20 logical cores, ~11 effective. 73 games/s for our own light policies; **~2-4 games/s** for the 1 MB public agents (~700 ms each per game) |
 | Kaggle CPU session | 4 vCPU (~2.5 effective), 32 GB, Python 3.12, **12h** max |
 | Concurrency | **5 batch CPU sessions per account** — a hard cap, pushing a 6th errors |
-| Live accounts (2026-09-24) | ISHRAQ, DIDHITI, TASHIN, SALAM, Eshad, Mashrafi, Samin → **35 concurrent kernels** |
-| Pin a job to free accounts | `KAGRI_ACCOUNTS=Mashrafi,Samin python scripts/kfarm.py worldeval ...` |
+| Live accounts (2026-09-26) | ISHRAQ, DIDHITI, TASHIN, SALAM, Eshad, Mashrafi, Samin, **Nasif** → **40 concurrent kernels** |
+| Pin a job to free accounts | `KAGRI_ACCOUNTS=Nasif python scripts/kfarm.py worldeval ...` |
 
 `scripts/kfarm.py` drives it. Each account gets its own `KAGGLE_CONFIG_DIR`, so calls
 run in parallel without fighting over `~/.kaggle/access_token` — never use
@@ -357,17 +360,32 @@ runs/      jobs.json, island checkpoints, best.json (gitignored)
 - Before submitting: run the real `kaggle_environments` runner end-to-end, check DONE/DONE, 720 states,
   and worst-case per-call latency.
 
-## Current state (2026-09-24)
+## Current state (2026-09-26) — read `progress.md` before acting
 
-Live: **56508972 = c-frontier-0923 + our shed guard (margin 14) at 2452.5 and climbing**; best ever
-seen was 2583.1 (09-21, on a weaker field). Full submission table, live-vs-offline caveats, the
-current meta's features and the next steps are in **`progress.md`** — read that before acting.
-`PLAN.md` is the dated experiment log.
+Live pair: **56558912** (Frontier-0923 + guard 14 + skip-MILK) and **56558917** (Shepherd's Herd-Safe
++ guard 14) — deliberately two *different lineages*. Best rating ever seen was 2583.1 on 09-21, which
+is unreachable now: the scale drifts (section 3 of progress.md).
 
-The shed guard still pays on the current best base: **+2.48pp, z=12.95, 136,811 paired games**,
-mirror-free, three independent seed ranges, margin 14 (18/10/22 slightly worse; the f684 fertilizer
-cutoff adds nothing on this base). Ship it with `scripts/bake_guard.py`, then
-`runs/verify_bake.py` (baked == evaluated variant) and `build_submission.validate()` before submitting.
+**Two wrappers pay and are shipped**, everything else is a measured negative:
+- shed guard margin 14: **+1.72pp, z=18.78, 98,671 paired games**
+- never sell MILK: **+0.64pp, z=9.47, 181,478 fresh-seed games** (milk floors at $1 after ~76 units;
+  skipping STRAWBERRY instead is −1.84pp, so it is item-specific)
+
+Ship with `scripts/bake_guard.py <base> 14 --skip MILK --out runs/<n>/main.py`, then
+`runs/verify_bake.py` and `build_submission.validate()`.
+
+**Closed levers — do not retry without a new hypothesis:** guard knobs (328k games, ±0.22pp),
+cheap-first ordering (−1.89pp), sale-advance forecast (−2.9 to −28.8pp), idle-worker layer (+$7/game),
+wheat speculation (8.3% vs 100%), cross-family routing (impossible — divergence at step 0),
+fertilizer cutoff (0.00 on this base), our own from-scratch policy (6× behind).
+
+**The live field is forks of our own base.** `runs/opp_id.py` over 30 replays: 23/30 opponents share
+our lineage, diverging at step 150 (match depth must exceed 400 — the lineage shares one tape until
+the router branches at 144). We beat the *public* versions ~100% and win 43% live, so their private
+layers are worth about as much as ours.
+
+**The meta is rock-paper-scissors:** shop-router beats our Frontier build 92.5%, Herd-Safe beats
+shop-router 95-100%, we beat Herd-Safe 77.5%. Hence the cross-lineage pair.
 
 ## koshinm's internals (investigated) -- fixed via an EXTERNAL wrapper instead
 

@@ -1,283 +1,281 @@
 # Kaggriculture — progress and handoff
 
-**Last updated: 2026-09-25.** Read `CLAUDE.md` first (engine facts, hard constraints, working rules),
-then this file. `PLAN.md` is the dated experiment log — this file is the *current* state.
+**Last updated: 2026-09-26.** Read `CLAUDE.md` first (engine facts, hard constraints, the daily
+ritual), then this file. `PLAN.md` is the dated experiment log — this file is the *current* state.
 
-Competition ends **2026-09-30**. 5 submissions/day, only the **latest 2** count for the final
-Bradley-Terry leaderboard. Prize: top 10.
+Competition ends **2026-09-30**. 5 submissions/day. Only the **latest 2** submissions count for the
+final Bradley-Terry leaderboard, and a new submission evicts the older of the two.
 
-**Standing instruction: do not submit without the user's explicit approval.** Propose, show the
-numbers, wait for a yes.
+**Submit only from ISHRAQ** (`farhanishraqq`). Submitting the same agent from teammate accounts is
+multi-account abuse and disqualifies the team.
 
 ---
 
-## 1. Where we stand
+## 1. TL;DR for whoever picks this up
 
-Submit **only** from ISHRAQ (`farhanishraqq`). Submitting the same agent from teammate accounts is
-multi-account abuse.
+- We ride the **best public agent** and add two small, measured wrappers of our own. We do not have
+  our own competitive agent from scratch — that was tried and failed by 6×.
+- Current live pair: **56558912** (Frontier + guard + milk-skip) and **56558917** (Shepherd's
+  Herd-Safe + guard) — deliberately two *different lineages*, because the meta is rock-paper-scissors.
+- **Every wrapper/meta lever we could think of is now measured and closed** (section 5). The two that
+  paid are shipped. Do not re-run the sweeps in section 6 without a new hypothesis.
+- The single most useful ongoing activity is the **daily Code-tab survey** (CLAUDE.md) — the best
+  available base changed three days running, and swapping base was worth ~15pp where our wrappers
+  are worth ~2pp.
+- **Ratings drift down hard.** Never compare numbers from different days (section 3).
 
-| Sub ID | Date | Agent | Live rating |
+---
+
+## 2. Live submissions, newest first
+
+| Sub ID | Date | Agent | Live |
 |---|---|---|---|
-| **56508972** | 09-24 | **Frontier-0923 + our shed guard (margin 14)** | **2452.5** at 5 h, still climbing |
-| 56502436 | 09-23 | haodou092 Harvest Ledger (0922 build) | 2051.3 |
-| 56502435 | 09-23 | prvsiyan Frontier (0922 build) | 2383.0 |
-| 56497677 | 09-23 | tetsutani-0921 resubmitted, byte-identical to the 2583.1 file | 2193.6 |
+| **56558917** | 09-25 | **PAIR 2/2** Shepherd's Herd-Safe-0925 + guard 14 | 2029.7 |
+| **56558912** | 09-25 | **PAIR 1/2** Frontier-0923 + guard 14 + skip-milk | 2016.2 |
+| 56557488 | 09-25 | drift test: byte-identical to the file that scored 2478.5 | **1970.3** |
+| 56557484 | 09-25 | drift test: byte-identical to the file that scored 2383.0 | **1779.1** |
+| 56555247 | 09-25 | Frontier-0923 + guard + milk-skip (first milk build) | 2023.6 |
+| 56532146 | 09-24 | Frontier-0923 unmodified (guard control) | 2084.3 |
+| 56508972 | 09-24 | Frontier-0923 + guard 14 | 2180.3 |
+| 56502435 | 09-23 | Frontier-0922 unmodified | 2383.0 |
+| 56497677 | 09-23 | tetsutani-0921 resubmitted (same bytes as the 2583.1 file) | 2193.6 |
 | 56470642 | 09-22 | dmitriigluzdov Herd-Safe | 2478.5 |
-| 56470640 | 09-22 | tetsutani-0922 | 2212.9 |
-| 56457171 | 09-22 | tetsutani tuned + guard (ours) | 2318.3 |
-| 56455306 | 09-22 | koshinm + guard (ours) | 2107.8 |
-| 56452572 | 09-22 | tetsutani + 2-knob tuning (ours) | 2429.3 |
-| 56442778 / 56442774 | 09-21 | koshinm / tetsutani unmodified | 2459.6 / **2583.1** |
+| 56442774 | 09-21 | tetsutani-0921 unmodified | **2583.1** (best ever) |
 | 56406154 | 09-20 | public fork-2801 | 1934.8 |
 | 56406056 / 56405251 | 09-20 | our own from-scratch policies | 495 / 434 |
 
-Highest number ever seen: 2583.1 on 09-21. **That number is not a target — see section 2.**
-Target: 3000.
-
 ---
 
-## 2. Ratings drift down over time — never compare across days
+## 3. Ratings drift — the single most important measurement discipline
 
-The same file, resubmitted two days later, scored **2583.1 → 2192.5**. Byte-identical
-(`opponents/c-tetsutani-0921.py`, sha `9c0a8921`), same account.
+The same bytes, resubmitted later, score far lower. Measured three times:
 
-destbreso's `ladder_forecast.json` (in `data/bench/`, from `destbreso/kaggriculture-benchmark-matchups`)
-shows the same effect independently: a fixed submission's median rating decays from 2087 at episode 146
-to 1738 by episode 266 as the field strengthens.
+| File | Original | Resubmitted | Drop |
+|---|---|---|---|
+| tetsutani-0921 (sha `9c0a8921`) | 2583.1 (09-21) | 2192.5 (09-23) | −391 |
+| dmitrii Herd-Safe (sha `4889137f`) | 2478.5 (09-24) | **1970.3** (09-25) | −508 |
+| Frontier-0922 (sha `bc80b476`) | 2383.0 (09-23) | **1779.1** (09-25) | −604 |
+
+Corroborated independently by destbreso's `ladder_forecast.json` (`data/bench/`): a fixed submission's
+median rating decays 2087 → 1738 as it plays more episodes.
 
 Consequences:
-- A rating is only meaningful against other agents rated **in the same window**.
-- Our earlier conclusion that "our modifications rate lower live than their parents" was **partly an
-  artifact of this drift** — the modified versions were rated in a stronger field. It is no longer
-  treated as established.
-- 3000 today is a far stronger agent than 3000 would have been a week ago.
-
-A new submission starts at 600 and needs roughly a day to converge. Judge two agents by comparing
-them at the *same age*, not by their current numbers.
+- **Never compare ratings from different days.** Compare agents at the same age, or not at all.
+- Notebook score badges are **frozen at submission time**. `v43-local-confirmed` shows 2550.5 and is
+  byte-identical to a file that wins **3.1%** against today's field; v49 shows 2467.0 and wins 22.5%;
+  shop-router shows 2689.9 and wins 48.4%. Do not chase badges.
+- "2583 was our best, we're falling" is wrong — that number is unreachable now by any agent.
 
 ---
 
-## 3. Methodology trap that cost us a whole experiment
+## 4. What the live field actually is (`runs/opp_id.py`)
 
-**Never put a candidate's own base into the opponent list.** Farm job `g3` measured the guard on
-Frontier with Frontier-0923 itself among the opponents, so the guarded version was credited for
-beating its own unguarded mirror: it reported **+4.34pp (z=9.41)**. The same comparison with a
-mirror-free opponent set gives **+2.48pp**. The inflated `g3` numbers for Harvest Ledger (+22.6pp)
-and dmitrii-2700 (+28.9pp) have the same defect and must not be quoted.
+Replays our own live games with candidate agents in the opponent's seat and measures how many turns
+match. **Match depth must exceed 400** — the public lineage shares one tape until the router branches
+at step 144, so a 120-turn match proves nothing.
 
-Rule: the opponent field must be fixed, and disjoint from the candidate list.
+Over 30 live replays: **masterhybrid-lineage 16, frontier-0923 7, tetsutani 2, cha22 1, unidentified 4,
+shop-router 0.**
 
-Second trap, already known but re-confirmed: small paired samples swing sign. The same local guard
-test read −2.42pp (z=−1.90) at n=496 and +1.21pp (z=1.21) at n=912. Do not act below a few thousand
-paired cells.
+**23 of 30 opponents are our own lineage**, diverging at a median of step 150 — right after the router
+branch. They are not running the public files; they run the same base plus their own private layers,
+exactly like us. Our champion beats the *public* versions of those agents 100/100/100/91.7%, which
+predicts ~99.7%, yet we win **43% (13/30)** live. Their private layers are worth about as much as ours.
+
+We are mid-crowd among forks of one agent. Our measured edge over the bare base is ~+2.3pp.
 
 ---
 
-## 4. What has been tried
+## 5. The meta is rock-paper-scissors (`runs/h2h.py`)
 
-### Confirmed, and shipped
+Direct head-to-head, both seats:
 
-| Finding | Evidence | Status |
+| | beats | at |
 |---|---|---|
-| **Shed-overflow guard, margin 14, on Frontier-0923** | **+2.48pp, z=12.95, 136,811 paired games, mirror-free, 3 independent seed ranges** | live as 56508972 |
-| Guard margins: 14 best, then 18 (+2.40), 10 (+2.19), 22 (+2.00) | same pooled test | 14 shipped |
-| Fertilizer purchase cutoff at step 684 | +1.03pp z=17.8 on the old tetsutani base (87k games); **no added effect on Frontier** (identical to margin 14 alone) | not needed on current base |
+| shop-router-v7 | our Frontier champion | **92.5%** (6W-74L) |
+| shop-router-v7 | masterhybrid / tetsutani / frontier-0923 | 100% / 100% / 91.7% |
+| Herd-Safe (shepherds-0925, dmitrii-2700) | shop-router-v7 | **95–100%** |
+| our Frontier champion | Herd-Safe | 77.5% (57.5% vs guarded) |
+| our champion | cha22 | 91.7% |
+| cha22 | shop-router | 100% |
 
-### Confirmed on older bases, value on current bases unproven
+No single agent covers this cycle; **the tracked pair can**. That is why the two live submissions are
+deliberately from different lineages. Most competitors submit two agents of the same family and get
+swept by whichever counter appears.
 
-- Guard on koshinm (+2.86pp z=8.12), on tetsutani-tuned (+1.73pp z=3.66), and +1 to +26pp across
-  seven 09-21-era public agents. Those bases are now 20–60 points behind the field.
-- tetsutani knobs `_SR_MARGIN` 8→12, `_Y_MARGIN` −6→−12 (+1.95pp z=7.02, 211k games).
-
-### Dead ends — do not retry without a new hypothesis
-
-- **Our own policy from scratch** (`opt/policy.py`, `opt/search.py`): plateaued ~6× behind public
-  agents, live 434–495. All 20 farm islands hit the same ceiling, so it is expressiveness, not budget.
-- Round-2 tetsutani knob sweep (12 constants, 123k games): nothing significant; several constants
-  confirmed already optimal in both directions.
-- v50 opening tweaks: every change catastrophic; the tape is funded to the exact coin.
-- Routing within an agent family: per-game oracle equals the default.
-- Cloning top-10 replays: they are reactive from turn 0.
-- `opt/tapeeval.py` vs top-10 tapes: uninformative.
-- Guard variants: hour gating (−6 to −20pp), wheat reserve (−2 to −3pp), skipping WHEAT or
-  FERTILIZER (−2pp), margins 6/8 (−16 to −19pp).
-- Time-based seed-purchase cutoffs (c636–c666): −7 to −55pp. Note the Herd-Safe authors do this
-  *need-based* (limit late seeds to remaining planting work) and report it as a win — the idea is
-  fine, our blunt implementation was not.
-- Shop steering ("God's mode"): directed control only ~10–18%, score impact unmeasured. Parked.
+Caveat: shop-router does **not** appear in our live opponent sample, so this insurance may never be
+needed — but it costs nothing, since the Herd-Safe build is strong in its own right.
 
 ---
 
-## 5. The public meta, as of 2026-09-24
+## 6. Everything tried
 
-Features that distinguish the current top builds, from the Code-tab survey:
+### Shipped and paying
 
-| Feature | Source | Our status |
-|---|---|---|
-| Opponent-sale forecast: predict rival SELLs 1–4 turns ahead and sell first, gated on ≥3 matching historical events and ≥70% precision over 240 turns | Herd-Safe v3 "forecast4" (arsgorynich); also in `c-shepherds-0924` | not ported; `g5` tests whether guarding a forecast-carrying base beats ours |
-| Avoid fertilizer that cannot improve the planned harvest | Herd-Safe (dmitriigluzdov) | independently found by us (f684) |
-| Late seed purchases limited to remaining planting work | Herd-Safe | our time-based version failed |
-| Reduced opening wheat round-trip, keeping 5 wheat + planting seed | Herd-Safe | untested |
-| Bounded 7-turn terminal delivery planner | Herd-Safe | our bases already liquidate to $0 |
-| Reordering contiguous SELL blocks after the other market layers | Frontier (prvsiyan) on haideptry's Master Hybrid 2965 | inside our current base |
-| Shed-overflow guard before the 100-item cap | **ours** | shipped |
+| Change | Evidence |
+|---|---|
+| **Shed-overflow guard, margin 14** (`opt/shed_guard.py`) | **+1.72pp, z=18.78, 98,671 paired games**, pooled over 5 farm + 4 local samples |
+| **Never sell MILK** (`--skip MILK`) | **+0.64pp, z=9.47, 181,478 fresh-seed games** (+0.73pp z=11.50 pooled, 204,673) |
 
-**Agent ranking — farm `rr2`, 113,378 games, 0 errors** (local run on separate seeds agreed,
-13,873 games, same order at the top):
+Milk works because milk hits the $1 floor after ~76 units and never recovers, so spending it to clear
+the 100-item shed cap destroys more value than bulk does. **Item-specific**: skipping STRAWBERRY is
+−1.84pp, wool +0.14 (ns), melon 0.00 (never fires).
 
-| Agent | Farm | Local |
-|---|---|---|
-| **c-frontier-0923** | **89.8%** | **80.8%** |
-| c-frontier-0922 | 74.5% | 65.0% |
-| c-v15stack | 67.8% | 66.6% |
-| c-shepherds-ledger | 67.7% | 70.6% |
-| c-pop-robust | 67.7% | 66.4% |
-| c-late-v16 | 67.1% | 64.8% |
-| c-herdsafe-v3 | 66.3% | 72.7% |
-| c-harvest-ledger-0923 | 43.7% | 41.5% |
-| c-herdsafe-ca25 | 43.5% | 48.8% |
-| c-dmitrii-2700 | 43.0% | 47.4% |
-| c-tetsutani-0921 | 27.8% | 27.2% |
-| c-thomas-2944 | 23.1% | 31.1% |
+### Closed — measured negatives, do not retry without a new hypothesis
 
-Offline ranking and live rating correlate only loosely (dmitrii-2700 is 43% offline and was our
-best live agent for two days). Treat offline as a filter, live as the verdict.
+| Lever | Result |
+|---|---|
+| Guard knobs: margins 11–22, price floors p5–p30, item skips, combinations | 129k + 199k games, everything within ±0.22pp of shipped; margin 14 + skip-milk is a local optimum |
+| Cheap-first sell ordering (`:L`) | −1.89pp (z=−14.61), worse at higher margins, 153,359 games |
+| Sale-advance / opponent-dump forecast (`opt/sale_advance.py`) | −2.9 to −28.8pp, monotonically worse with more lead |
+| Idle-worker layer (`opt/idle_work.py`) | CARE fires once/game, fertilizer +$7/game — units are parked on watered plants and empty pastures |
+| **Wheat speculation** (`opt/trader.py`) | Never fires safely (base already has a wheat order on 218 turns/game); forced, **8.3% vs 100%** |
+| Cross-family routing | Oracle +5.2pp but **unreachable**: candidates diverge at step 0, so there is nothing to condition on |
+| Fertilizer cutoff f684 | +1.03pp on the old tetsutani base, **0.00 on Frontier** |
+| Our own policy from scratch | Plateaued ~6× behind public agents; live 434–495 |
+| tetsutani 2-knob tuning | +1.95pp on that base — but that base is now bottom of the field |
+| Round-2 tetsutani knob sweep (12 constants) | 123k games, nothing significant |
+| Time-based seed cutoffs | −7 to −55pp (Herd-Safe authors do it *need-based* and report a win — the idea is fine, our implementation was not) |
+| Hire-rate hypothesis | Killed before building: 275.8 hires/game on **both** sides |
+| Shop steering ("God's mode") | Directed control only 10–18%, impact unmeasured. Parked |
 
-Agents live in `opponents/` as plain `.py`. The `c-` prefix means the file came from
-`kaggle kernels output`, i.e. the exact file that author submitted — always prefer that over
-notebook extraction.
+### Never converted, worth knowing
+
+Guard gains are **base-dependent**: +27.5pp on cha22, +20.9pp on evgen, +12.1pp on pop-robust,
++4.0pp on harvest-ledger, but only +1.2–1.7pp on Frontier, which already liquidates well.
+`runs/discard_probe.py` predicts this on strong bases (Frontier leaks 5.5 units/game) but **not** on
+weak ones (icefire leaks 1.0 yet gained +10.4pp) — use it as a filter, not a veto.
 
 ---
 
-## 6. Compute
+## 7. Agent ranking (farm `broad`, 339,857 games, 16 lineages, 2026-09-26)
 
-**7 Kaggle accounts × 5 concurrent CPU sessions = 35 kernels**, each 4 vCPU / 12 h max.
-Tokens in `Secrets.env`: ISHRAQ, DIDHITI, TASHIN, SALAM, Eshad, Mashrafi, Samin. All authenticate.
-Plus local: 20 logical cores, though these 1 MB agents run ~700 ms/game, so expect a few games/s,
-not the 73/s the old lightweight policies managed.
+| Agent | Win % |
+|---|---|
+| **guard:c-frontier-0923:14:sMILK (ours)** | **93.7%** |
+| c-frontier-0923 | 93.1% |
+| c-shepherds-0925 | 85.7% |
+| c-masterhybrid-2965 | 78.8% |
+| guard:c-shoprouter-v7:14 | 53.3% |
+| c-shoprouter-v7 | 48.4% |
+| c-v49 | 22.5% |
+| c-utils-v1 = v43-local-confirmed | 3.1% |
+
+The champion scores *higher* on the broad 16-lineage panel than on the old narrow one, so it is not
+overfitted to relatives.
+
+---
+
+## 8. Methodology rules, each learned the hard way
+
+1. **The opponent field must be fixed and disjoint from the candidate list.** Including a candidate's
+   own base as an opponent credits it for beating its own mirror: it turned a true +2.48pp into a
+   reported +4.34pp, and inflated two other results to +22pp and +29pp.
+2. **Anything under ~2k paired cells is unmeasured.** Sign flips observed repeatedly: guard read
+   −2.42pp at n=496 and +1.21pp at n=912; a complement read **+4.00pp (z=3.03) at n=375** and settled
+   at **−3.50pp over 88k games**. Every large farm sample agreed; only small ones disagreed.
+3. **A delta of exactly 0.00 means your layer is not running.** Market orders are **lists**
+   `["SELL", item, qty]`; `_parse_order` returns None for any other shape and drops the order
+   **silently**. Dict-shaped orders produced 0.00 deltas across 8 variants and 8,320 games.
+4. **Discovery and confirmation must use different seed ranges.** Everything shipped was confirmed on
+   a fresh block first.
+5. **Never judge a build by $-vs-starter.** harvest-ledger-0925 posted $198,166, the highest ever
+   measured, and lost to us by 12.4pp over 162,374 games.
+6. **Hash-dedupe before testing.** Four notebooks have shipped one identical file (`127ed3e6`).
+7. On Windows, `pathlib.write_text()` without `encoding="utf-8"` corrupts source files.
+
+---
+
+## 9. Compute
+
+**8 Kaggle accounts × 5 concurrent CPU sessions = 40 kernels** (ISHRAQ, DIDHITI, TASHIN, SALAM, Eshad,
+Mashrafi, Samin, Nasif), tokens in `Secrets.env` (gitignored — never commit it). Plus ~20 local cores,
+though the 1 MB public agents run ~700 ms/game, so local yields only a few games/s.
 
 ```bash
-python scripts/panel_dataset.py                       # after adding agents to opponents/
+python scripts/panel_dataset.py                  # push opponents/ to every account first
 python scripts/kfarm.py worldeval <min> 5 <seed_base> "<cands>" "<opps>" <tag>
-KAGRI_ACCOUNTS=Mashrafi,Samin python scripts/kfarm.py worldeval ...   # pin to free accounts
-python scripts/kfarm.py status
-python scripts/kfarm.py harvest_we <tag>              # -> runs/<tag>_all.jsonl
-python opt/paired.py "<base cand>" runs/<tag>_all.jsonl [more.jsonl] --only SUBSTR
+KAGRI_ACCOUNTS=Nasif python scripts/kfarm.py worldeval ...   # pin to accounts with free slots
+python runs/wait_tags.py <tag>                   # poll to completion, then harvest
+python scripts/kfarm.py harvest_we <tag>         # -> runs/<tag>_all.jsonl
+python opt/paired.py "<champion>" runs/<tag>_all.jsonl [more.jsonl] [--only SUBSTR]
 ```
 
-`KAGRI_ACCOUNTS=A,B` (added 09-24) restricts a launch to those accounts, so a second job can use
-accounts that still have free slots — the 5-session cap is per account and pushing a 6th errors.
-
-A 35-shard × 120 min run yields roughly 100–130k games. Kernel output is only retrievable after the
-kernel completes; harvesting 35 shards takes several minutes.
+A 40-shard × 120-minute run yields roughly 150–300k games. The 5-session cap is per account; a 6th
+push errors, and `runs/wait_tags.py` ignores shards that failed to launch (otherwise it polls forever).
 
 ---
 
-## 7. Tooling
+## 10. Tooling
 
 ```
-engine/fastsim.py          fast engine, parity-verified
-engine/test_parity.py      THE GATE — run after any engine/fastsim edit
-opt/opponents.py           load any agent by name; runtime variants (below)
-opt/worldeval.py           paired evaluation, --cands/--opps/--seed-lo/--seed-hi/--minutes/--out
-opt/paired.py              paired deltas + z per candidate from jsonl
-opt/shed_guard.py          external pre-cap selling wrapper, no agent internals needed
-opt/sweep_eval.py          one-knob paired sweeps
-opt/replays.py             verify/match live replays
-scripts/kfarm.py           the farm
-scripts/panel_dataset.py   upload opponents/ as the private kagri-panel dataset
-scripts/fetch_notebooks.py pull notebook sources (for reading the authors' method notes)
-scripts/extract_agents.py  AST-based extraction from notebooks (writes BYTES — never text)
-scripts/bake_guard.py      permanently append the guard to an agent
-scripts/bake_variant.py    permanently substitute a knob value
-scripts/build_submission.py  validate(path) = official kaggle_environments gate
-runs/fetch_out.py          download kernel OUTPUTS (the exact submitted main.py / tarball)
-runs/smoke.py              load + one game vs starter, for any new agent
-runs/verify_bake.py        baked file must equal the evaluated runtime variant
-runs/wait_tags.py          poll farm tags to completion, then harvest each
-runs/livediag.py/_an.py    download and analyse our own live replays
+engine/fastsim.py          fast engine, parity-verified   engine/test_parity.py  THE GATE
+opt/opponents.py           agent loader + runtime variant naming (below)
+opt/worldeval.py           paired evaluation              opt/paired.py   deltas + z from jsonl
+opt/shed_guard.py          SHIPPED wrapper                opt/sale_advance.py  measured negative
+opt/idle_work.py           measured negative              opt/trader.py        measured negative
+opt/leftover.py            unsold value at season end     opt/live_gap.py      per-product loss gap
+scripts/kfarm.py           the farm       scripts/panel_dataset.py  panel upload
+scripts/bake_guard.py      ship the guard (--skip supported)   scripts/bake_variant.py  knob baking
+scripts/build_submission.py  validate() = official runner gate
+runs/fetch_out.py          pull exact submitted files     runs/smoke.py    load + 1 game
+runs/discard_probe.py      shed-leak screen               runs/waste_probe.py  escapes / missed CARE
+runs/idle_probe.py         idle labour                    runs/divergence.py   router feasibility
+runs/h2h.py                direct head-to-head            runs/opp_id.py   identify live opponents
+runs/steal.py              what live winners do differently    runs/hire_stats.py
+runs/verify_bake.py        baked file == evaluated variant     runs/livediag.py  pull our replays
 ```
 
-**Runtime agent naming** (no file edits needed to evaluate a variant):
-- `name@KNOB=VALUE[@K2=V2]` — rewrite a top-level constant (must match exactly one line)
-- `guard:BASE:MARGIN[:opts]` — wrap in the shed guard; options joined with `+`:
-  `h<hour_min>`, `w<wheat_keep>`, `s<ITEM>` (skip), `c<seed_cutoff>`, `f<fert_cutoff>`
+**Runtime agent naming** (evaluate any combination without writing a file):
+- `name@KNOB=VALUE` — rewrite a top-level constant (must match exactly one line)
+- `guard:BASE:MARGIN[:opts]` — shed guard; opts joined with `+`: `h`hour_min, `w`wheat_keep,
+  `s`ITEM (skip), `c`seed_cutoff, `f`fert_cutoff, `p`min_price, `L` cheap-first
+- `idle:BASE[:c+f+w]`, `adv:BASE:LEAD:MINEVENTS[:opts]`, `trade:BASE[:opts]` — the measured negatives
+- They stack: `trade:guard:c-frontier-0923:14:sMILK:b32+m40`
+
+**Champion name:** `guard:c-frontier-0923:14:sMILK`
 
 ---
 
-## 8. Submission procedure
+## 11. Submission procedure
 
 ```python
 kfarm.kag("ISHRAQ", token, "competitions", "submit", "-c", "kaggriculture", "-f", path, "-m", msg)
 ```
-Either a bare `main.py` or the author's `submission.tar.gz`; prefer the tarball when it ships
-`LICENSE.txt` / `NOTICE.txt`.
 
-**Non-negotiable:** public agents are Apache-2.0. Keep every upstream notice, name the authors in the
-description, never strip authorship.
+Gates for anything we modified, in order:
+1. `python scripts/bake_guard.py <base> <margin> [--skip MILK] --out runs/<name>/main.py`
+2. `python runs/verify_bake.py` — baked file must reproduce the evaluated variant **to the coin**
+3. `build_submission.validate(path)` — official runner, 720 steps, DONE/DONE, worst case < 200 ms
+4. Attribution: public agents are Apache-2.0. Keep every upstream notice, name the authors in the
+   description. **Never strip authorship.** The shipped builds carry 31–34 notices.
 
-Gates for anything **we modified**:
-1. `python runs/verify_bake.py` — baked file reproduces the evaluated variant to the coin
-2. `build_submission.validate(path)` — official runner, 720 steps, DONE/DONE, worst case < 200 ms
-3. stdlib only, no `__file__`, no network
-
-An unmodified public build whose own notebook log already shows that check does not need it repeated.
+Latency note: the Frontier base measures ~180–190 ms worst case on a loaded machine (Kaggle's limit is
+1000 ms). That is the base, not our layers — earlier 45 ms readings were the unrepresentative ones.
 
 ---
 
-## 9. Closed levers (2026-09-25) — the guard is exhausted on this base
+## 12. State at handoff, and what to do next
 
-- **Guard knob fine sweep `g6`** (129,591 games): margins 11-17 and price floors p5/p8/p15 are all
-  within +/-0.22pp of the shipped margin 14, top z=2.58 on an 11-variant sweep. Nothing to win.
-- **Why**: `runs/discard_probe.py` shows Frontier only discards **5.5 units/game (all WHEAT, ~$150)**
-  under the guard, 5.8 without it. The shed leak is closed on this base. The guard is worth +27.5pp on
-  cha22 and +1.2pp here for exactly that reason — **expect large guard gains only on bases that leak**.
-- **`opt/sale_advance.py` — sell before the opponent's predicted dump: CLOSED, negative.**
-  Every setting lost, monotonically worse with more lead: lead 0 -2.89pp, lead 1 -14.75pp (z=-6.34),
-  lead 2 -18.75pp, min_events 2 -28.75pp (z=-10.58). Dumping a stack early walks our own price down the
-  glut curve, and these tapes are tuned to sell *after* town demand restores the price. Do not retry
-  advance-style sale timing.
-- **Liquidation**: $0 unsold at season end, every game. Nothing there either.
-- **Remaining loss profile**: median loss $557, 46.8% of losses under $500. Worst matchup
-  c-koshinm-0921 at 35.1% (median deficit $430) though it is 27.8% overall — non-transitive.
+**Running:** farm job `pairfinal` (40 kernels, seeds 6.0M) measuring both submitted pair members plus
+dmitrii on the broad 16-lineage panel. Harvest with `python runs/wait_tags.py pairfinal`, then
+`python opt/paired.py "guard:c-frontier-0923:14:sMILK" runs/pairfinal_all.jsonl`. Use it to decide the
+final pair.
 
-**ENGINE GOTCHA:** market orders are **lists** `["SELL", item, qty]`. `_parse_order` returns None for
-any other shape and drops the order **silently**. Dict-shaped orders produced deltas of exactly 0.00
-with z=0.00 across 8 variants and 8,320 games. *A delta of exactly zero means your layer is not
-running.* Also: `pathlib.write_text()` without `encoding="utf-8"` corrupts source files on Windows.
+**Do this daily** (see CLAUDE.md "DAILY RITUAL"): survey the Code tab, pull exact submitted files,
+hash-dedupe, smoke-test, discard-probe, then a farm round-robin against the fixed broad field. Base
+selection is the only lever with proven returns.
 
-## 9b. Daily survey, 2026-09-25
+**On 09-30 (deadline day):** submit the two strongest agents **last**, and as late as practical, so
+they are rated in the final field rather than decaying for days first. Keep them cross-lineage.
 
-Five reruns, no genuinely new strong build. **tetsutani's new build, guru's Master Engine V3 and our
-`c-cha22` are the same file** (sha `127ed3e6`) -- always hash before treating a rerun as new.
-New and installed: `c-evgen-0924`, `c-utils-v1` (old pipe-7 tape family, $187k vs starter).
-
-**Discard-probe screen** (`runs/discard_probe.py`, the cheap "is this base worth guarding?" test):
-every current base leaks only 7-17 WHEAT units/game (~$150-400). frontier-0923 10.3, evgen 6.8,
-utils-v1 17.0, shepherds/harvest-ledger/v15stack/late-v16/herdsafe-v3 all 10.3 (same Metav4 lineage).
-**No current base leaks enough for the guard to matter** -- it is worth +27.5pp only on a leaky base
-like cha22. Screen every new base this way before spending farm time on a guard sweep.
-
-## 9c. Running now
-
-- **`g5`** (35 kernels × 150 min, seeds 2.3M; local arm on 2.4M): 15 candidates — our champion
-  `guard:c-frontier-0923:14`, five 09-24 bases with and without the guard (`c-masterhybrid-2965`
-  = Frontier's parent, `c-shepherds-0924` = carries the forecast overlay, `c-harvest-ledger-0924`,
-  `c-pop-robust-0924`, `c-cha22`, `c-pioneers-c2`), plus guarded Herd-Safe v3 and v15stack —
-  against a **fixed 10-agent opponent field disjoint from the candidates**.
-  Question: does any base beat Frontier-0923, and does guarding a forecast-carrying base beat ours?
-
-## 10. What to do next
-
-1. **Base selection is the only lever with proven returns.** The best public base improved ~15pp in a
-   single day (frontier-0922 74.5% -> frontier-0923 89.8%), while every wrapper we own is worth 0-2.5pp
-   on it. Survey, test, ride the best base; guard it only if `runs/discard_probe.py` shows it leaks.
-2. Re-survey the Code tab **daily** — the best available base changed on three consecutive days.
-   `kaggle kernels list --competition kaggriculture --sort-by dateRun`, then `runs/fetch_out.py <ref>`.
-3. If nothing beats the champion, the next lever is porting the **opponent-sale forecast** as an
-   external wrapper (like the guard), so it can ride on whatever base is currently best.
-4. Reserve the final two slots for 2026-09-30, since only the latest 2 count.
-5. Open question worth real effort: build a **live-correlated evaluator**. Offline win rate vs public
-   agents is a weak predictor. Candidate approach: score candidates against the *recorded actions* of
-   currently top-rated live teams from `data/top10/` and the episodes dataset, rather than against
-   public agents only.
+**Honest assessment.** Our champion beats every public agent we can find (93.7% over 339k games), but
+the live field is other people's forks of the same base, and we win 43% of those. Our edge over the
+bare base is ~+2.3pp. Reaching the prize cutoff would need something categorically better than
+"best public base + small wrappers", and every wrapper-shaped idea we could construct is in section 6
+with a number next to it. The remaining honest leads, neither of which we pursued to completion:
+- **Wool / YARN_STORE composition** — the largest single revenue gap in live losses ($243/game,
+  vs carrot $95 and strawberry $82, against a ~$550 median loss margin). It is shop-driven, so it is
+  reactive territory a wrapper could in principle reach.
+- **Need-based late-purchase limits** as the Herd-Safe authors implement them (ours was time-based and
+  failed at −7 to −55pp).

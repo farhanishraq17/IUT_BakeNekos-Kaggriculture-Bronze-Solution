@@ -682,3 +682,23 @@ Lever status on the current base -- ALL CLOSED: shed guard (exhausted, 5.5 units
 milk-skip (shipped, +0.64pp), sale advance (negative), idle work (+$7/game), cross-family routing
 (impossible - divergence at step 0), guard knobs (129k games, nothing), cheap-first (refuted),
 wheat speculation (catastrophic).
+
+## 2026-09-26: HANDOFF SNAPSHOT
+
+Live pair (the two that count for the final leaderboard): **56558912** Frontier-0923 + guard 14 +
+skip-MILK, and **56558917** Shepherd's Herd-Safe-0925 + guard 14 — deliberately cross-lineage.
+
+**Drift test, third and fourth measurements.** Byte-identical resubmissions of files that scored
+2478.5 and 2383.0 landed at **1970.3** and **1779.1** — drops of 508 and 604 points in 1-2 days.
+Together with tetsutani's 2583.1 -> 2192.5, the scale is moving ~250-300 points/day at this level.
+**No rating from a different day is comparable to any other.**
+
+Farm `pairfinal` (40 kernels, seeds 6.0M) left running: both pair members + dmitrii vs the broad
+16-lineage field. Harvest with `python runs/wait_tags.py pairfinal`, analyse with opt/paired.py.
+
+Full state, everything tried, all methodology rules and the two remaining honest leads are in
+**progress.md**, rewritten as the handoff document. CLAUDE.md carries the daily ritual and the
+current-state summary.
+
+Final tally of levers: **2 shipped** (shed guard +1.72pp z=18.78; skip-MILK +0.64pp z=9.47),
+**9 closed as measured negatives**, ~2.5M simulated games across 28 farm job families.
