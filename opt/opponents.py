@@ -91,6 +91,24 @@ def get(name: str):
         import shed_guard
         _cache[name] = shed_guard.wrap(get(base_name), margin=margin, **kw)
         return _cache[name]
+    if name.startswith("trade:"):
+        # "trade:BASE[:opts]" -> BASE + the wheat-speculation layer (trader.py).
+        # opts joined with "+": b<buy_below>, u<buy_until>, s<sell_after>,
+        # m<max_hold>, a<sell_above>. The base may itself be a guard: name whose
+        # own opts use the same letters ("sMILK"), so a trailing field counts as
+        # trader opts only if EVERY token is <letter><digits>.
+        import re as _re
+        parts = name[len("trade:"):].split(":")
+        kw = {}
+        if len(parts) > 1 and parts[-1] and all(
+                _re.fullmatch(r"[busma]\d+", t) for t in parts[-1].replace(",", "+").split("+")):
+            for o in parts.pop().replace(",", "+").split("+"):
+                kw[{"b": "buy_below", "u": "buy_until", "s": "sell_after",
+                    "m": "max_hold", "a": "sell_above"}[o[0]]] = int(o[1:])
+        base_name = ":".join(parts)
+        import trader
+        _cache[name] = trader.wrap(get(base_name), **kw)
+        return _cache[name]
     if name.startswith("idle:"):
         # "idle:BASE[:opts]" -> BASE + the idle-unit layer (see idle_work.py).
         # opts joined with "+": c(are), f(ertilizer), w(ater); default care only.

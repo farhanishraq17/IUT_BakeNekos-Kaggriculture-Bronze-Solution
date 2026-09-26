@@ -661,3 +661,24 @@ sides, identical** -- it ranks high only because HIRE is frequent. No wrapper bu
 **Where their edge sits** (`opt/live_gap.py`, mean revenue advantage in games we lose): WOOL **+$243**,
 CARROT +$95, STRAWBERRY +$82, total ~$420 against a ~$550 median loss margin. No single product
 explains it; these are coin flips between near-identical agents.
+
+## 2026-09-26: wheat speculation (`opt/trader.py`) -- CLOSED, catastrophic
+
+Last untested mechanical lever. The engine allows BUY_PRODUCT for only WHEAT and FERTILIZER; of those
+only wheat appreciates (log glut curve + constant town drain, $25 -> $46), so buy early / sell late
+with spare order slots looked like free money. Built with a full self-check (feed floor so the herd is
+never starved, shed-cap headroom, cash reserve, order-cap respect, sells only what it bought).
+
+**It never fires with safe settings**: over a full game, 218 turns blocked because *the base already
+has a wheat order that turn*, 148 because the price is above threshold, 23 no spare cash, 18 full
+queue. The base is already exploiting the wheat curve (CLAUDE.md: buys 6-27/day, sells 330-790/season)
+-- there is no idle wheat opportunity to capture.
+
+**Forced to fire with permissive settings (buy <= $45, hold 40, ignore the base's own wheat orders):
+8.3% vs c-masterhybrid-2965, where the unmodified champion scores 100%.** Buying wheat starves the
+base's operating cash and fights its own economy. Kept in the tree as a measured negative; do not retry.
+
+Lever status on the current base -- ALL CLOSED: shed guard (exhausted, 5.5 units/game left),
+milk-skip (shipped, +0.64pp), sale advance (negative), idle work (+$7/game), cross-family routing
+(impossible - divergence at step 0), guard knobs (129k games, nothing), cheap-first (refuted),
+wheat speculation (catastrophic).
