@@ -1,6 +1,6 @@
 # Kaggriculture — progress and handoff
 
-**Last updated: 2026-09-26.** Read `CLAUDE.md` first (engine facts, hard constraints, the daily
+**Last updated: 2026-09-28** (the 09-28 PLAN.md entry supersedes sections 1, 7 and 12 below: the field moved to the V84/pi base). Read `CLAUDE.md` first (engine facts, hard constraints, the daily
 ritual), then this file. `PLAN.md` is the dated experiment log — this file is the *current* state.
 
 Competition ends **2026-09-30**. 5 submissions/day. Only the **latest 2** submissions count for the
@@ -30,6 +30,13 @@ multi-account abuse and disqualifies the team.
 
 | Sub ID | Date | Agent | Live |
 |---|---|---|---|
+| **56706672** | 09-30 11:58 UTC | **c-pi-0927 + FEED0 + SN_K2/SN_H48 + `_S738_LOOK=8` + `_OR2_SLOT_H=24` + guard 28 + e704** (sha e5b30b29) — p45: 66.6% h2h vs 56701685 cfg | new |
+| **56701685** | 09-30 08:07 UTC | **c-pi-0927 + FEED0 + SN_K2/SN_H48 + `_S738_LOOK=8` + `_OR2_SLOT_H=18` + guard 28 + e704** (sha 720aa529) — p43: 80.1% h2h vs 56686173 cfg | new |
+| 56689378 | 09-29 22:55 UTC (evicted 09-30 by 56706672, ~1773) | **c-pi-0927 + FEED0 + sell-now SN_K2/SN_H48 + `_S738_LOOK=8` + `_OR2_SLOT_H=12` + guard 28 + e704** (sha 6b575213) — full stack | new |
+| 56686173 | 09-29 19:46 UTC (evicted 09-30 by 56701685, ~2004) | **c-pi-0927 + FEED0 + sell-now `_OR2_SN_K=2`/`_OR2_SN_H=48` + guard 28 + e704** (sha 77e854a4) — predicted ~2150-2190 | new |
+| 56680502 | 09-29 | c-pi-0927 + FEED0 + guard 28 + e704 — evicted by 56689378 | ~1781 |
+| 56662946 | 09-29 | guard 28 + e708 on c-pi-0927 — evicted 09-30 by 56686173 | ~1617 (stalled) |
+| 56648604 | 09-28 | guard 14 + skip-MILK on c-pi-0927 — evicted 09-29 by 56680502 | ~1930-1970 (converged) |
 | **56558917** | 09-25 | **PAIR 2/2** Shepherd's Herd-Safe-0925 + guard 14 | 2029.7 |
 | **56558912** | 09-25 | **PAIR 1/2** Frontier-0923 + guard 14 + skip-milk | 2016.2 |
 | 56557488 | 09-25 | drift test: byte-identical to the file that scored 2478.5 | **1970.3** |

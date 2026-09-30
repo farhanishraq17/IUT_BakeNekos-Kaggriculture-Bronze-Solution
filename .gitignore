@@ -19,3 +19,6 @@ __pycache__/
 *.pyc
 *.pkl
 *.parquet
+
+# Modified copies of public agents (1.2 MB each), rebuilt from opponents/ + a knob list
+runs/base_*.py

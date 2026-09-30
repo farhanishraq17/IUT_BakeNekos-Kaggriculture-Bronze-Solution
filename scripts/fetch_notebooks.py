@@ -7,6 +7,7 @@ opponents/notebooks/<slug>.py (the cell-marker format extract_agents.py reads).
 from __future__ import annotations
 
 import json
+import os
 import sys
 import tempfile
 from concurrent.futures import ThreadPoolExecutor
@@ -47,7 +48,7 @@ def fetch(ref: str, alias: str, token: str) -> str:
 
 
 def main(refs: list[str]) -> int:
-    alias = "ISHRAQ"
+    alias = os.environ.get("KAGRI_ALIAS", "DIDHITI")  # ISHRAQ is no longer in Secrets.env
     _u, token = live_accounts()[alias]
     OUT.mkdir(parents=True, exist_ok=True)
     with ThreadPoolExecutor(max_workers=6) as ex:

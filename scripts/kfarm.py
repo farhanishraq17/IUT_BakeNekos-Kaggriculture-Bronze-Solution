@@ -60,7 +60,7 @@ def kag(alias: str, token: str, *args: str, timeout: int = 300) -> subprocess.Co
     # a status sweep over 20 kernels.
     try:
         return subprocess.run(
-            ["kaggle", *args], capture_output=True, text=True,
+            ["kaggle", *args], capture_output=True, text=True, encoding="utf-8", errors="replace",
             env=env_for(alias, token), check=False, timeout=timeout,
         )
     except subprocess.TimeoutExpired:
@@ -85,8 +85,13 @@ def live_accounts() -> dict[str, tuple[str, str]]:
                 if not only or a in only}
         for a, f in futs.items():
             u = f.result()
-            if u:
-                out[a] = (u, accounts()[a][1])
+            want, tok = accounts()[a]
+            # An empty token falls back to some other cached credential: never
+            # let one alias silently push kernels onto another account.
+            if u and tok:
+                if want and u.lower() != want.lower():
+                    print(f"note: {a} token authenticates as {u}, not {want}", file=sys.stderr)
+                out[a] = (u, tok)
     return out
 
 
@@ -120,7 +125,9 @@ def push(alias: str, username: str, token: str, slug: str, code: str,
             "language": "python",
             "kernel_type": "script",
             "is_private": True,
-            "enable_gpu": False,
+            # KAGRI_GPU=1: run on a GPU machine purely for its CPUs -- GPU sessions are
+            # metered separately from the 5-per-account CPU cap, so this adds workers.
+            "enable_gpu": os.environ.get("KAGRI_GPU") == "1",
             "enable_tpu": False,
             "enable_internet": False,
             "dataset_sources": datasets or [],
@@ -387,6 +394,19 @@ def cmd_harvest_we(tag: str = "we") -> int:
     return 0
 
 
+def cmd_cancel(tag: str) -> int:
+    """Delete every kernel of a tag (the CLI has no cancel; delete stops the run
+    and frees the session slot). Only our own private farm kernels are touched."""
+    acc = accounts()
+    jobs = [j for j in load_jobs() if j.get("kind") == tag and j.get("ok")]
+    with ThreadPoolExecutor(max_workers=8) as ex:
+        res = list(ex.map(lambda j: kag(j["alias"], acc[j["alias"]][1], "kernels", "delete", j["ref"], "-y"), jobs))
+    for j, r in zip(jobs, res):
+        print(f"{j['ref']:44s} {(r.stdout + r.stderr).strip()[:80]}")
+    save_jobs([j for j in load_jobs() if j.get("kind") != tag])
+    return 0
+
+
 def cmd_accounts() -> int:
     live = live_accounts()
     allacc = accounts()
@@ -439,7 +459,7 @@ def cmd_pull() -> int:
 if __name__ == "__main__":
     cmds = {"accounts": cmd_accounts, "probe": cmd_probe, "status": cmd_status,
             "pull": cmd_pull, "run": cmd_run, "harvest": cmd_harvest,
-            "worldeval": cmd_worldeval, "harvest_we": cmd_harvest_we}
+            "worldeval": cmd_worldeval, "harvest_we": cmd_harvest_we, "cancel": cmd_cancel}
     name = sys.argv[1] if len(sys.argv) > 1 else "accounts"
     if name not in cmds:
         print(__doc__)

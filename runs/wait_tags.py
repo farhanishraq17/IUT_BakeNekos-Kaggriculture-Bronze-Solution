@@ -15,7 +15,8 @@ while True:
             st = list(ex.map(lambda j: kfarm.status(j["alias"], acc[j["alias"]][1], j["ref"]), jobs))
         c = Counter(st)
         print(f"{tag}: {dict(c)}", flush=True)
-        if c.get("complete", 0) < len(jobs):
+        # error/cancel are terminal too, or one crashed shard means polling forever
+        if sum(v for k, v in c.items() if k in ("complete", "error", "cancel_acknowledged", "cancel_requested")) < len(jobs):
             left.append(tag)
     if not left:
         break

@@ -1,0 +1,1 @@
+guard:c-pi-0927:28:e708,guard:c-pi-0927@_CA_MARGIN=-24.0:28:e708,guard:c-pi-0927@_CA_MARGIN=-24.0:28:e704,guard:c-pi-0927@_CA_MARGIN=-26.0:28:e708,guard:c-pi-0927@_CA_MARGIN=-24.0:28:sEGG+e704,guard:c-pi-0927:28:sEGG+e708,guard:c-pi-0927@_CA_MARGIN=-20.0:28:e704

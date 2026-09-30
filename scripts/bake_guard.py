@@ -33,9 +33,11 @@ def _guard_get(obs, key, default=None):
 
 
 _GUARD_SKIP = {skip!r}   # items never sold by the guard (see PLAN.md)
+_GUARD_ENDGAME = {endgame}   # from this step: sell ALL shed stock each turn, skip list ignored
 
 
-def _guard_apply(obs, action, margin={margin}, min_price=2):
+def _guard_apply(obs, action, margin={margin}, min_price=2, skip=None):
+    skip = _GUARD_SKIP if skip is None else skip
     if not isinstance(action, dict):
         return action
     player = _guard_get(obs, "player")
@@ -74,7 +76,7 @@ def _guard_apply(obs, action, margin={margin}, min_price=2):
     prices = market.get("prices", {{}})
     cands = sorted(
         ((int(prices.get(it, 0)), it, int(shed.get(it, 0))) for it in _GUARD_PRODUCTS
-         if it not in already_selling and it not in _GUARD_SKIP
+         if it not in already_selling and it not in skip
          and int(shed.get(it, 0)) > 0 and int(prices.get(it, 0)) >= min_price),
         reverse=True,
     )
@@ -103,6 +105,8 @@ def agent(observation, configuration=None):
         _takes_cfg = False
     action = _GUARD_BASE_AGENT(observation, configuration) if _takes_cfg else _GUARD_BASE_AGENT(observation)
     try:
+        if int(_guard_get(observation, "step", 0) or 0) >= _GUARD_ENDGAME:
+            return _guard_apply(observation, action, margin=1000, skip=())
         return _guard_apply(observation, action)
     except Exception:
         return action
@@ -115,6 +119,7 @@ def main() -> int:
     ap.add_argument("margin", type=int)
     ap.add_argument("--out", required=True)
     ap.add_argument("--skip", default="", help="comma list of items the guard must never sell")
+    ap.add_argument("--endgame", type=int, default=10**9, help="step from which ALL shed stock is sold")
     args = ap.parse_args()
     base_path = Path(args.base)
     if not (base_path.suffix == ".py" and base_path.exists()):
@@ -122,7 +127,7 @@ def main() -> int:
     src = base_path.read_bytes()
     skip = tuple(x for x in args.skip.replace("+", ",").split(",") if x)
     footer = FOOTER_TMPL.format(when=time.strftime("%Y-%m-%d"), margin=args.margin,
-                               skip=skip).encode("utf-8")
+                               skip=skip, endgame=args.endgame).encode("utf-8")
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_bytes(src + footer)

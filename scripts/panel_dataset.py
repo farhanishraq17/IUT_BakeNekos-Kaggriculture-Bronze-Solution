@@ -41,6 +41,12 @@ PANEL = [
     # 2026-09-26: lineages the panel was MISSING. shop-router beat the tetsutani
     # family 98.1% and was not in the opponent field at all.
     "c-shoprouter-v7", "c-v49", "pipe-7-wheat-microstructure", "c-v54-productive",
+    # 2026-09-28: new public builds. mengine-0928 == ttv1 == top-2-v4 == 2965-hybrid (sha 63dde9e4);
+    # pi = mengine@_CA_MARGIN=-22; tetsutani-0927 / harvest-ledger-0928 differ only in error handling.
+    "c-mengine-0928", "c-pi-0927", "c-tetsutani-0927", "c-harvest-ledger-0928", "c-shepherds-0927",
+    "c-idle-seller-0927", "c-mengine-v53e", "c-evgen-0926", "c-multiroute-0928", "c-wheat-seller-v58",
+    # 2026-09-29: haodou092 V89 = mengine + day-4 mirror-family gate on the s793 permutation layer.
+    "c-harvest-ledger-0929",
 ]
 
 

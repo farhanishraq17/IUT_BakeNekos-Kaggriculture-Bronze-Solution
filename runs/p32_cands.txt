@@ -1,0 +1,1 @@
+guard:c-pi-0927:28:e704,guard:c-pi-0927@_CA_MARGIN=-26.0:28:e704,guard:c-pi-0927:28:sWHEAT+e704,guard:c-pi-0927:28:sEGG+e704,guard:c-pi-0927:28:sFERTILIZER+e704,guard:c-pi-0927:32:sWHEAT+e704,guard:c-pi-0927:32:sFERTILIZER+e704,guard:c-pi-0927:28:sMILK+e708,guard:c-pi-0927@_CA_MARGIN=-24.0:28:e704

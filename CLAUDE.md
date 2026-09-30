@@ -11,6 +11,33 @@ equals a +50k win. Final leaderboard is a Bradley-Terry tournament over your **l
 - **Ratings drift down as the field strengthens: never compare ratings from different days.** The
   byte-identical file that scored 2583.1 on 09-21 scored 2192.5 on 09-23. Compare agents at the same age.
 
+## FINAL SUBMISSION RULES (verified 2026-09-30 against the official Rules and Overview pages)
+
+- **Rules §2:** max **5 submissions per day**; "you may select up to two (2) Final Submissions". For this
+  simulation competition the **Overview > Evaluation** page fixes the selection: *"only the latest 2 submissions
+  are tracked. The latest 2 submissions are also used for final leaderboard evaluation."* There is no manual
+  selection — **the final pair is simply the last two submissions made before the deadline.** Confirmed on the
+  logged-in Submissions page (2026-09-30): every submission except the latest two is marked *"Disabled due to the
+  competition's active submission limit."*
+- **Final Submission Deadline: 2026-09-30 23:59 UTC** (= 2026-10-01 05:59 Bangladesh time, the machine's "BST").
+  Games then run ~2 weeks (Oct 1 to ~15); a Bradley-Terry fit over those episodes is the final leaderboard, and the
+  team is shown at its **best-scoring** bot of the two.
+- **The daily limit resets at 00:00 UTC** (= 06:00 Bangladesh time). This is Kaggle's platform rule, not stated on
+  the competition page; confirmed by the logged-in Submit dialog at 22:53 UTC on 2026-09-29: "You have 2
+  submissions remaining today. This resets in an hour." (3 of 5 used that UTC day).
+- **Every new submission evicts the older of the two tracked ones.** Therefore:
+  - **The last two submissions before the deadline ARE the final pair — they must be our two best builds.**
+  - On the final day (2026-09-30 UTC, 5 submissions) that leaves **at most 3 submissions for testing**, and the
+    **last 2 submissions are reserved for the final pair.**
+  - To keep an already-live submission in the final pair, you can make **at most one** more submission after it.
+  - Re-submitting a build's file makes a *new* submission that restarts at rating 600; that is acceptable because
+    newer bots play more often and the post-deadline games decide the final ranking. Leave a margin: finish the
+    final two submissions hours before 23:59 UTC, and confirm both pass Kaggle's validation episode.
+- A test submission needs ~3-4 h of live games for a rough read and ~1 day to settle, so final-day tests must
+  go in as early as possible after the 00:00 UTC reset.
+- Submit only with the user's explicit approval, from the team account (the only credential reachable in
+  Secrets.env signs as `didhitinahid`, which is on the team IUT_BakeNekos).
+
 ## DAILY RITUAL (do this every session, before anything else)
 
 The leaderboard moves every day on new public features. Falling behind by one day has already cost

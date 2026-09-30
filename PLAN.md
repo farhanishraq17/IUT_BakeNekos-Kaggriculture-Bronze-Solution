@@ -702,3 +702,217 @@ current-state summary.
 
 Final tally of levers: **2 shipped** (shed guard +1.72pp z=18.78; skip-MILK +0.64pp z=9.47),
 **9 closed as measured negatives**, ~2.5M simulated games across 28 farm job families.
+
+## 2026-09-28: THE FIELD MOVED — new base (pi / V84 Step1009), guard worth 10x more on it
+
+Leaderboard 09-28: we were rank 1888/10,117 (1750.2). **Silver = top 5% = rank <=505 = 2283.8 that day.**
+Public authors' fresh submissions sit right at that line: Kunal Desale (ttv1) 2271, tetsutani 2269, Auto Fermers
+(dmitrii) 2377, Georgy Mamarin 2322, track (ahmedberatozer) 2287.
+
+**New public base.** Four notebooks ship one file (sha 63dde9e4 = `c-mengine-0928`: haideptry 2965-hybrid 09-28,
+Guru Prasaath S master-engine V4, Kunal ttv1). tetsutani-0927 (Step1009) differs only by one None-check,
+harvest-ledger-0928 only by a fail-closed wrapper, idle-seller-0927 (Step1010) is behaviourally identical — it
+**ties mengine to the coin on 74/80 games**. leoprovorov's "pi" = mengine with `_CA_MARGIN` -15 -> -22 (carrot swaps).
+
+**n28** (491,683 games, 1,083 fresh seeds 8.0M, 12 candidates x 20 opponents, seed-clustered SEs):
+
+| candidate | field (13, disjoint) | V84 twins |
+|---|---|---|
+| guard:c-pi-0927:14:sMILK | 90.0% | **69.8%** |
+| c-pi-0927 | 90.0% | 61.4% |
+| guard:c-mengine-0928:14:sMILK | 89.6% | 60.3% |
+| c-mengine-0928 | 89.8% | 44.7% |
+| guard:c-frontier-0923:14:sMILK (old live champion) | 86.0% | **16.6%** |
+| guard:c-shepherds-0925:14 (old live #2) | 91.2% | 11.7% |
+
+Head-to-head: guard-pi beats mengine 73.2%, idle-seller 73.8%, bare pi 62.3%. pi's carrot knob alone is ~+11pp.
+
+**Why the guard is worth ~10x more here (+16pp vs +1.7pp on Frontier):** twin games are decided by 3-50 coins out
+of ~100k, and results are seat-symmetric. Shed discards are NOT the mechanism (they happen with an empty shed:
+hands carry >100 items at day end, and the twin loses the same units) — it is **selling ahead of the twin**.
+
+**Endgame sell-all layer (`guard:...+e<step>`, new):** from step E sell every shed item each turn. Local discovery
+(seeds 7.2M, mengine base, vs bare twin, 120 games): e708 **58 better / 0 worse**, +36 coins mean, WR 55.8 -> 62.5%;
+e696 58/18 (losses only 1-4 coins); e714 no effect (base's own closure already emptied the shed).
+`bake_guard.py --endgame N` ships it; bakes verified coin-identical to the runtime variants.
+
+**SUBMITTED 56648604** = guard:c-pi-0927:14:sMILK (sha cefc5ca1), from didhitinahid with user approval (the
+ISHRAQ token is not available to Claude; all reachable credentials sign as didhitinahid). Official runner 720/720
+DONE/DONE; worst-call latency (341-1714 ms) is the unmodified base's own, not our layer.
+
+Running: **p29** (65 kernels, seeds 8.2M, 300 min) — pi base: endgame 704/708/711, margin 10/20/28 (+e708),
+`_CA_MARGIN` -18/-26/-30/-40 (+e708), vs 15 opponents incl. rivals with their own guard/endgame layers.
+
+## 2026-09-29 (early): guard shape on the pi base; three ideas closed; rating calibration
+
+**p29** (526,867 games, seeds 8.2M, pi base, vs 15 incl. rival proxies with their own guard/endgame): endgame
+e708 **+6.3pp** vs twins (56.0 -> 62.3%), e704 equal, e711 no effect; margin 28 + e708 **71.0%** vs twins
+(margin 10/14/20: 60.4/62.3/63.4%); `_CA_MARGIN` -26 +1.5pp, -18/-30 worse, -40 collapses (43.5%).
+Margin 28 wins mostly against guarded rivals (77% vs gM24, 71% vs gM24+e704) while giving up ~3-6pp vs bare twins.
+
+**p30 + g30/g30b/g30c** (358,043 games, seeds 8.3-8.6M; GPU sessions are metered separately from the 5 CPU
+sessions/account, +24 workers via `KAGRI_GPU=1`): margin curve 24/28/32/36/45/60 = 68.2/71.4/61.1/33.9/18.4/4.6%
+vs twins — a **cliff above 32**. Dropping skip-MILK helps (28:e708 73.8% vs 71.4%); e704 >= e700 ~ e708.
+
+**Closed this session (cheap sanity games, no farm spend):**
+- Within-turn best response to the predicted twin list (engine-exact lockstep sim, verified == `_process_market`
+  on 300 random pairs): fires **once per game** — the base sells one item at index 0 exactly like its twin, and
+  after e708 our shed is empty before the twin's liquidation lots. Deleted.
+- Opening de-sync to dodge the twin's EXP288 mirror gate: premise stale (the live step-0 list is
+  `[BUY 8, SELL 3, BUY_SEED 1]`, not `_R42_OPENING`), and the rival escalates to depth 24 after our first deep
+  pre-emption (`_race_lost`, EXP293) anyway. Deleted.
+- Fertilizer front-running (`sell all shed fertilizer at index 0`): **-3,308 / -828** vs +891 / +488 without it; the
+  rival GAINED ~$2.8k. The base also BUYS fertilizer for its crops, so dumping cheapens the rival's purchases and
+  we rebuy dearer. Deleted.
+
+**Rating scale** (refit on 249k episodes, 09-29 dataset, established-vs-established games): bins with |diff| <= 100
+imply a logistic scale **s ~ 100-110 points/logit** (noisy ratings bias this upward). So 72-74% vs the twin mass is
+~+100-115 rating points; exceeding 2500 from a twin mass at ~2100-2160 would need ~94%. Live: 56648604 at 1982.1
+(09-29 06:14 UTC) and still climbing; 12 replays: 7W 3L 2T, all DONE/DONE, max 0.12 s of overage used, nearly every
+opponent a twin (exact ties).
+
+**p31** (163,053 games, seeds 8.7M): the base's race knobs on top of guard 28 + e708 — `_RACE_HORIZON_MIRROR`
+16/32, `_RACE_HORIZON_ESCALATED` 32, `V9_RACE_MARGIN` 6/18, `_SR_MARGIN` 16, `_OR2_SLOT_MARGIN` 4/12,
+`V9_RACE_WINDOW` 40 — **all null** (71.5-72.2% vs twins, reference 72.1%, SE ~1.1). Closed: the authors' race
+settings are already optimal with our guard on top; only the guard's own shape and `_CA_MARGIN` move results.
+
+**g31** (107,712 games, GPU slots, seeds 8.8M): best = `guard:c-pi-0927:28:e704` **73.0% vs twins** (83.1% field);
+28:e708 72.5, 26:e704 72.4, `_CA_MARGIN=-26` 72.2, 28:sMILK+e708 71.2, 30:e704 69.6. **Wheat reserve collapses it**
+(w30 50.2%, 32/36+w30 ~46%, 40+w60 44.8%): the margin cliff is NOT feed starvation — the guard's early wheat sales
+are part of its edge. Guard shape is converged: margin 28, no skip, endgame 704-708.
+
+## 2026-09-29 04:43 UTC: SUBMITTED 56662946 = guard:c-pi-0927:28:e708 (no skip), sha 0f9623e2
+
+On the user's explicit instruction ("submit the best candidate to slot 2 anyway"), from didhitinahid. Evidence:
+p30 73.8% vs twins / 85.1% field (n~35k), g31 72.5% / 83.1% (tied with 28:e704 73.0%). Bake == runtime on 3 seeds;
+official runner 720/720 DONE/DONE, worst call 60 ms. Evicts 56558917 (Shepherds, 1711). Live pair:
+56662946 + 56648604 (converged ~1971 after 112 games). Projection from s~110 calibration: ~2050-2100.
+
+**p32** (160,875 games, seeds 8.9M; opponents add our live 56648604 config and a rival running our best):
+finalists vs twins 71.7-72.8% (28:e704 72.5, +sEGG 72.8, `_CA_MARGIN` -24/-26 72.2/71.7); skipping FERTILIZER
+64.3% and WHEAT 47.4% — the guard's wheat/fertilizer sales ARE its edge. **Head-to-head vs the live 56648604 config:**
+28:e704 67.7% (n=1,103) -> ~2053 at s=110 (anchor 1971); `_CA_MARGIN=-24` 71.4% -> ~2072; -26 70.8% -> ~2068.
+Vs a rival running our own best config: ~58%. 56662946 (28:e708) is tied with 28:e704 (g31) -> expect ~2050.
+
+**p33** (128,734 games, seeds 9.1M): hour-gating the guard is harmful — h6 49.2% vs twins (40.8% h2h vs live cfg),
+h12 59.8%, h18 60.8%, ungated 73.0%: the guard's value is concentrated right after the day tick, when the twin's
+tape also sells. Price floor p30 -7pp, p10 neutral; margin 22 64.7%; e700 = e704. Finalist 28:e704: 73.0% vs twins,
+71.8% h2h vs the live 56648604 config.
+
+## 2026-09-29 18:15 local: slots were idle ~6 h (auto-launchers died with the previous session)
+
+Relaunched: p34 (CPU, second-slot finalists h2h vs submitted config), g33 (GPU, **economic knob screen batch 1**:
+24 single-assignment constants x 2 directions on top of guard 28 + e708, vs bare pi / submitted config / rival),
+with auto-launch of p35 (knob batch 2, 29 more constants) and g34 (g33 replicate) and harvesters. Rationale: vs
+twins the win rate is hypersensitive to small economic gains (`_CA_MARGIN` alone gave +11pp), so the base's other
+economic constants are the only remaining lever big enough to matter. Some accounts hit the 30 h/week GPU quota.
+
+## 2026-09-29 19:00 local: FIRST ECONOMIC-KNOB HIT — `_CA_FEED_DAYS=0` (+7.8pp vs twins)
+
+**g32** (106,830 games, GPU, seeds 9.0M; carrot-layer knobs on guard 28 + e704): `_CA_FEED_DAYS=0` **79.6% vs twins**
+(ref 71.8%), 87.0% field, **82.2% h2h vs the live 56648604 config** (ref 69.5%) -> projected **~2139** at s=110.
+Dose-response is monotonic: FEED_DAYS 0/1/2 = 79.6/71.8/53.0%. `_CA_TO=25` collapses (50.5%), `_CA_BUFFER` 4/14
+worse (63.8/69.1), `_CA_CASH`/`_CA_FROM` +-1 (ns), late margin E680 null. The knob is the number of days of wheat
+feed the carrot layer insists on holding before converting a wheat planting to carrots; at 0 it converts whenever
+the carrot swap pays. Same lesson as `_CA_MARGIN`: more carrots, later, beat twins (hinge scarcity pricing).
+
+Reprioritised: p34 cancelled (obsolete); **p36** (CPU) = carrot combos on FEED0 (margin -18/-26/-30, `_CA_TO=29`,
+cash/from/buffer, guard 24/32, e704 vs e708) vs a field that includes a rival WITH FEED0; knob batches rebuilt on
+the FEED0 base (g34 batch 2 on GPU after g33, p37 batch 1 on CPU after p36), all auto-launched.
+Ship file pre-built and gated: `runs/sub_pi_feed0_g28_e708/main.py` (sha f013fa34; LF, byte-exact = base with one
+knob line changed + our footer; bake == runtime on 3 seeds; official runner DONE/DONE, worst 58 ms).
+Also closed: guard top-up `T` (-74/-297 coins on 2 sanity games), `t` (no effect).
+
+## 2026-09-29 21:35 local (15:33 UTC): p36 CONFIRMS FEED0 -> SUBMITTED 56680502 (replaces 56648604)
+
+**p36** (161,379 games, fresh seeds 9.6M). Pre-registered criteria for the FEED0 ship config vs the submitted
+56662946 config: vs twins +4.4pp (72.8 vs 68.4) PASS; h2h 55.7% z=3.20 PASS; field 86.0 vs 85.2 PASS. On the FEED0
+base **e704 beats e708** (74.8% vs twins, h2h vs submitted **63.5% z=6.77** vs 55.7%) — consistent with p30/g31
+where e704 >= e708 — so the shipped FEED0 build uses e704. Best combo (single block, NOT yet confirmed):
+FEED0 + `_CA_FROM=9` 76.6% vs twins, h2h vs submitted **70.4% (z=10.8)**, vs a FEED0 rival 63.5%. Others:
+`_CA_MARGIN=-18` 75.0, `_CA_CASH=1600` 74.6, `_CA_TO=29` 74.1, `_CA_BUFFER=11` 73.1, -26 71.7, -30 67.1;
+guard margin 24/32 with FEED0: 67.9/66.6 (28 stays optimal).
+
+**g33** (knob batch 1, 66,396 games): 40/48 variants bit-identical to the reference (V9 carrot layer, herd-milk,
+crop-switch/herd-decision ratios, budgets: dormant). Small positives: `V9_HERD_MIN_WOOL=200` h2h 52.8% (z=3.0),
+`V9_HERD_MAX_EGG_SHOPS=0` 51.1% (z=2.3). Clear negatives: `V9_FERT_FIRST_DAY` 10/18, `_CXTB_MIN_REVENUE` 6000/13000,
+`_CH_SHED=80`. p37 (batch 1 on FEED0) cancelled as ~80% inert.
+
+**SUBMITTED 56680502** = guard:c-pi-0927@_CA_FEED_DAYS=0:28:e704 (sha 05f9bc2c; LF, byte-exact FEED0 base with the
+one modified line marked + our footer; bake == runtime on 3 seeds; official runner DONE/DONE). Prediction logged
+BEFORE submission: pooled h2h vs the 56648604 config ~81.4% -> **~2090-2135 at s=110 (rank ~790-890, bronze)**;
+2200+ needs a true scale >= ~150 (~1 in 4). Live pair now 56680502 + 56662946.
+Next: p38 (running) re-confirms FEED0 + g33's wool/egg positives; p39 (auto after p38) confirms FEED0 + `_CA_FROM=9`
+combos head-to-head vs the new submission's config.
+
+**p38** (145,199 games, seeds 9.9M): FEED0 re-confirmed on a second fresh block — FEED0:e708 73.1% vs twins vs
+66.8% without FEED0 (+6.3pp); field 85.7 vs 84.4. g33's herd positives are null here (`V9_HERD_MIN_WOOL=200`
++0.2pp, `V9_HERD_MAX_EGG_SHOPS=0` +0.15pp): closed.
+
+## 2026-09-29 23:20 local: g34 finds the base's SELL-ADVANCE layers set too timid for a twin field
+
+**g34** (knob batch 2 on FEED0, 25,716 games, 8 GPU shards, ~120 h2h games per variant — small): three large hits,
+each with a monotonic dose-response:
+- `_OR2_SN_K` 0 -> 2 ("sell-now": when the rival is observed holding >= K units of a premium item, pull our tape's
+  planned sales of it within 24 turns forward to now; the authors shipped it DISABLED): h2h 81.1% (z=6.4),
+  paired +24.9pp (z=5.7).
+- `_S738_LOOK` 4 -> 8 (how far ahead already-stocked cash sales are advanced): h2h 75.9% (z=4.7), paired +19.0pp;
+  LOOK=2 42.2%.
+- `_OR2_SLOT_H` 6 -> 12 (sale-advance horizon when the order list is full): h2h 71.2% (z=4.7), paired +14.9pp;
+  SLOT_H=3 24.2% (-22pp).
+Same lesson as the guard/endgame: vs forks running the same tape, selling ahead of the shared schedule wins.
+Negatives worth keeping: `_S744_STEP`/`_S747_STEP` shifts -20..-30pp (sharply tuned), `_V92_P_H=24`, `_S809_LOOK=1`.
+p39 (FROM9 combos, ~+7pp) cancelled 32 min in; **p40** (65 CPU) + g40 (4 GPU) confirm the hits with dose brackets,
+stacks with/without FROM9, and an arms-race opponent that also has sell-now enabled.
+
+## 2026-09-30 01:50 local: p40 CONFIRMS THE SELL-NOW LAYER — best = FEED0 + `_OR2_SN_K=2` + `_OR2_SN_H=48`
+
+**p40 + g40** (170,917 games, seeds 10.1M/10.2M, fresh): vs FEED0 alone (74.2% vs twins):
+- FEED0 + SN_K2 + SN_H48: **86.7% vs twins** (p40 86.8, g40 85.9 — consistent), field 84.7 (-0.9),
+  **h2h vs the 56680502 config 84.5% (z=17.6)**, vs a sell-now rival 70.0%, vs 56662946 cfg 84.7%, vs old live cfg 88.1%.
+- FEED0 + SN_K2 + LOOK8: 82.6%, h2h 78.6% (z=13.6), vs sell-now rival 74.6% (most robust in the arms race).
+- SN_K 1/2/4: 80.9/81.6/81.4 (flat once enabled); LOOK8 alone 79.0; SLOT_H12 alone 77.2 and adds nothing on top
+  (stack A 80.8); FROM9 +1.4pp here (fading).
+- **The shipped 56680502 config loses 67.9% to the sell-now rival** — exposed if rivals enable the layer.
+All four pre-registered rules pass. Ship file built and gated: `runs/sub_pi_sn48_g28_e704/main.py` (sha 77e854a4,
+LF, upstream + 3 marked knob lines + footer; bake == runtime; official runner DONE/DONE, worst 59 ms).
+Projection from the old-live anchor (1927-1971), s=110, h2h 88.1%: ~2150-2190.
+**SUBMITTED 56686173** (09-29 19:46 UTC, user-approved) = the sell-now build above (sha 77e854a4). Evicts 56662946
+(~1617). Live pair: 56686173 + 56680502 (FEED0, 1788.5 at ~4 h).
+
+**p41** (164,113 games, seeds 10.3M; stack A = FEED0+SN_K2+LOOK8+SLOT12 variants): **stack A + SN_H48 88.4% vs twins,
+86.8% field, h2h vs the 56680502 cfg 85.3% (z=20.4), vs SN rival 80.0%, vs stackA rival 68.8%, vs V89 89.3%** —
+cross-block vs 56686173 (p40: 86.7 / 84.7 / 84.5 / 70.0) ~+2pp and +10pp more robust vs a sell-now rival.
+SLOT_H 18 > 12 without SN_H48 (86.0 vs 83.0). V89 base adds nothing (82.7). P_TOP2 / S809 6 / HP 8 / FROM9 / LOOK12
+on top: null. p43 (auto after p42): full stack vs 56686173's exact config, head-to-head.
+**SUBMITTED 56689378** (09-29 22:55 UTC, user-approved, using one of 09-29's two expiring submissions) = full stack
+FEED0 + SN_K2 + SN_H48 + LOOK8 + SLOT12 + guard 28 + e704 (sha 6b575213; p41: 88.4% vs twins, 80.0% vs a sell-now
+rival). Evicts 56680502 (~1781). Active pair: 56689378 + 56686173 (2064.9). Final-day rule now in CLAUDE.md.
+
+**p42** (147,735 games, seeds 10.4M; variants on the 56686173 config SN48): **+LOOK8 90.5% vs twins, h2h vs 56686173
+cfg 66.1% (z=7.4), vs SN48 rival 74.0%** — supports 56689378 (which adds LOOK8 + SLOT12). Endgame e700 58.5% (z=5.9) —
+follow up on the full stack. SN_H 72/96 flat (50/48), SN_K1 49, P_TOP2 48, FROM9 53; guard 24 31.3% (!), 32 54.8%.
+
+## 2026-09-30 13:50 local: p43 — SLOT_H 18 beats 12 on top of SN48 + LOOK8
+
+**p43** (155,729 games, seeds 10.5M; h2h vs the 56686173 config): full stack SLOT12 (= submitted 56689378) 73.1%
+(z=13.0), 88.5% vs twins, 61.0% vs a full-stack rival; **SN48 + LOOK8 + SLOT18 80.1% (z=17.6), 90.7% vs twins,
+80.2% vs SN48 rival, 71.1% vs full-stack rival**; SN72+LOOK8+SLOT18 79.3 (no gain from 72); SN48+SLOT18 75.6;
+SN48+LOOK8 69.1; e708 on the full stack 70.7 (e704 stays). Live (last 16 games): 56689378 13W-3L at ~1700,
+56686173 7W-9L at ~2020-2075. One -18k loss was vs "Claudex", a different, stronger agent — DONE/DONE, no errors.
+Slots idled ~6 h again (launcher died with the session); relaunched as p44b at 13:30 local.
+**SUBMITTED 56701685** (09-30 08:07 UTC, user-approved) = SN48 + LOOK8 + SLOT18 build (sha 720aa529). Evicts 56686173
+(~2004). Active pair: 56701685 + 56689378 (full stack SLOT12, ~1715 and climbing). 1 of 5 submissions used on 09-30 UTC.
+
+**p44b** (122,059 games, seeds 10.7M; h2h vs the 56689378 config FS12): **SLOT18 build (= 56701685) 68.7% (z=10.1)**,
+89.5% vs twins, 81.7% vs SN48 cfg, 70.4% vs FS rival — confirms the 08:07 UTC submission. **FS12 + e696 59.7% (z=7.1)**,
+68.1% vs FS rival (vs 60.7% at e704) — the earlier endgame pays on the richer stack; e700 52.3%. Knob screen on the
+full stack exhausted: `_CA_BUFFER=10` 54.1 (z=3.5), `_OR2_CAP=20` 52.1, `V9_HERD_MIN_WOOL=200` 51.7, rest flat or
+worse (`_CA_BUFFER=6` 24.3, `_CA_MARGIN=-18` 42.6, `_V92_P_K=3` 44.7). p45 launched: SLOT18 build x {e696, e700, e692,
+BUFFER10, OR2_CAP20, SLOT24} vs both active configs.
+
+**p45** (119,899 games, 985 seeds, 10.8M; h2h vs the 56701685 config SLOT18): **SLOT24 66.6% (z=13.0)**, 81.5% vs
+56689378 cfg, 87.8% vs SN48 cfg, 73.1% vs a SLOT18 rival, 92.0% vs twins — slot dose keeps paying (6->12->18->24).
+SLOT18 + e692 60.0 / e696 59.9 (z~12), + BUFFER10 + e696 63.6 (but twins 88.9); e700 52.7; OR2_CAP20 52.2.
+**SUBMITTED 56706672** (09-30 11:58 UTC, user-approved) = SLOT24 build (sha e5b30b29). Evicts 56689378. Active pair
+56706672 + 56701685 (1999.8). 2 of 5 used on 09-30 UTC. p46 (running): SLOT 30/36/48 and e696/e692 on SLOT24.

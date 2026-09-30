@@ -88,6 +88,16 @@ def get(name: str):
                 kw["min_price"] = int(o[1:])
             elif o[0] == "L":
                 kw["cheap_first"] = True
+            elif o[0] == "e":
+                kw["endgame_step"] = int(o[1:])
+            elif o[0] == "E":
+                kw["late_step"] = int(o[1:])
+            elif o[0] == "M":
+                kw["late_margin"] = int(o[1:])
+            elif o == "T":
+                kw["topup"] = True
+            elif o == "t":
+                kw["topup_end"] = True
         import shed_guard
         _cache[name] = shed_guard.wrap(get(base_name), margin=margin, **kw)
         return _cache[name]

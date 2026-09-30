@@ -2,9 +2,11 @@
 import sys
 sys.path.insert(0, "opt"); sys.path.insert(0, "engine")
 import fastsim, opponents
-baked = opponents.get_path("runs/sub_frontier_guard/main.py")
-runtime = opponents.get("guard:c-frontier-0923:14")
-opp = opponents.get("c-herdsafe-v3")
+# usage: verify_bake.py [baked_path] [runtime_variant] [opponent]
+args = sys.argv[1:] + ["runs/sub_frontier_guard/main.py", "guard:c-frontier-0923:14", "c-herdsafe-v3"][len(sys.argv[1:]):]
+baked = opponents.get_path(args[0])
+runtime = opponents.get(args[1])
+opp = opponents.get(args[2])
 for seed in (31337, 31338, 31339):
     a = fastsim.run(baked, opp, seed=seed)
     b = fastsim.run(runtime, opp, seed=seed)
