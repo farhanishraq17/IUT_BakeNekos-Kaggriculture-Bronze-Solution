@@ -22,3 +22,10 @@ __pycache__/
 
 # Modified copies of public agents (1.2 MB each), rebuilt from opponents/ + a knob list
 runs/base_*.py
+
+# Internal working notes: kept locally, not published (README.md is the public write-up)
+/CLAUDE.md
+/PLAN.md
+/progress.md
+/Competition Link.txt
+kaggriculture/AGENTS.md

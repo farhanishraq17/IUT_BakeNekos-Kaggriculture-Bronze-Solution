@@ -147,7 +147,6 @@ Rules that silently kill agents:
 - Max 10 market orders per turn; extras are silently dropped. Orders must be lists, `["SELL", item, qty]`. Any other shape is dropped **without an error**.
 - **Labour, not land or cash, is the binding constraint.** 11 units cost $143/day; 15 cost $1,596.
 
-The full table, with prices after town drain, is in [CLAUDE.md](CLAUDE.md#engine-facts-that-decide-the-game).
 
 ## 2. The finding that decided it: you are playing your own twin
 
@@ -411,7 +410,7 @@ flowchart LR
     R -->|"yes"| B["bake + verify<br/>bake_guard.py<br/>verify_bake.py"]
     B --> VAL["official runner<br/>720/720 DONE<br/>latency"]
     VAL --> SUB["submit"]
-    R -->|"no"| CL["closed, with its<br/>number, in PLAN.md"]
+    R -->|"no"| CL["closed, with its<br/>measured number"]
 
     classDef io fill:#FDF0E4,stroke:#F47B20,stroke-width:2px,color:#7A3D06
     classDef core fill:#E8F1EE,stroke:#1B4D3E,stroke-width:2px,color:#0F2F26
@@ -441,20 +440,20 @@ candidate list**.
 
 **Worked**
 
-| Lever | Gain | Evidence |
+| Lever | Gain | Measured |
 |---|---|---|
-| Daily re-survey and base swaps | ~15pp per base swap, against ~2pp for wrappers | [progress.md](progress.md) §1 |
-| Shed-overflow guard, margin 14 (Frontier era) | +1.72pp, z=18.78, 98,671 paired games | [PLAN.md](PLAN.md) 09-25 |
-| Never sell MILK (Frontier era) | +0.64pp, z=9.47, 181,478 games | [PLAN.md](PLAN.md) 09-25 |
-| Guard on an obfuscated agent (koshinm) | +2.86pp, z=8.12, n=7,240 | [PLAN.md](PLAN.md) 09-22 |
-| Guard on the π twin field | 61.4% → 69.8% vs twins (n28, 491,683 games) | [PLAN.md](PLAN.md) 09-28 |
-| Endgame sell-all | +6.3pp vs twins (p29, 526,867 games) | [PLAN.md](PLAN.md) 09-29 |
-| `_CA_FEED_DAYS` 1 → 0 | +7.8pp vs twins, confirmed on two fresh blocks | [PLAN.md](PLAN.md) 09-29 |
-| Sell-now layer (`_OR2_SN_K=2`, `_OR2_SN_H=48`) | 86.7% vs twins; 84.5% h2h (z=17.6) | [PLAN.md](PLAN.md) 09-30 p40 |
-| Sale-advance (`_S738_LOOK=8`, `_OR2_SLOT_H` 18 → 24 → 48) | 80.1% → 66.6% → 64.5% h2h, each step against its predecessor | [PLAN.md](PLAN.md) p43–p46 |
-| Endgame from step 696 on SLOT48 | 58.7% h2h (z=9.5); 93.8% vs twins | [PLAN.md](PLAN.md) p47 |
+| Daily re-survey and base swaps | ~15pp per base swap, against ~2pp for wrappers | live ratings, 09-21 → 09-28 |
+| Shed-overflow guard, margin 14 (Frontier era) | +1.72pp, z=18.78, 98,671 paired games | 09-25 |
+| Never sell MILK (Frontier era) | +0.64pp, z=9.47, 181,478 games | 09-25 |
+| Guard on an obfuscated agent (koshinm) | +2.86pp, z=8.12, n=7,240 | 09-22 |
+| Guard on the π twin field | 61.4% → 69.8% vs twins (n28, 491,683 games) | 09-28 |
+| Endgame sell-all | +6.3pp vs twins (p29, 526,867 games) | 09-29 |
+| `_CA_FEED_DAYS` 1 → 0 | +7.8pp vs twins, confirmed on two fresh blocks | 09-29 |
+| Sell-now layer (`_OR2_SN_K=2`, `_OR2_SN_H=48`) | 86.7% vs twins; 84.5% h2h (z=17.6) | 09-30 · p40 |
+| Sale-advance (`_S738_LOOK=8`, `_OR2_SLOT_H` 18 → 24 → 48) | 80.1% → 66.6% → 64.5% h2h, each step against its predecessor | p43–p46 |
+| Endgame from step 696 on SLOT48 | 58.7% h2h (z=9.5); 93.8% vs twins | p47 |
 
-**Closed by measurement.** Each has its own record, so nobody walks the same dead end twice:
+**Closed by measurement.** Each one has a number, so nobody walks the same dead end twice:
 
 | Idea | Result |
 |---|---|
@@ -514,15 +513,12 @@ ladder fell ~190 points in two days. The final ranking comes from the post-deadl
 ```
 .
 ├── README.md                ← you are here
-├── progress.md              current-state handoff: submissions, ratings, what works, what is closed
-├── PLAN.md                  dated experiment log, 09-21 → 09-30: every farm round, every number
-├── CLAUDE.md                engine facts, hard constraints, daily ritual, measurement rules
 ├── assets/                  competition thumbnail and final leaderboard screenshot
 ├── submissions/             the two final submitted main.py files, byte-exact (Apache-2.0 derivatives)
 │   ├── final-1_sn48/        56717752
 │   └── final-2_slot48-e696/ 56713888
 │
-├── kaggriculture/           official README.md / AGENTS.md
+├── kaggriculture/           official game rules (README.md)
 ├── engine/                  pinned reference engine · fastsim · parity gate · benchmark
 ├── opt/                     evaluation and research code
 │   ├── opponents.py         agent loader + runtime variant naming (name@KNOB=VALUE, guard:…)
@@ -546,12 +542,11 @@ the 134 MB of public agents used as the opponent panel (`opponents/`, re-fetchab
 
 | Question | Read |
 |---|---|
-| What is the current state, and what would we do next? | [progress.md](progress.md) |
-| What was tried, in what order, and what did each round measure? | [PLAN.md](PLAN.md) |
-| How does the engine actually work? Which mechanics kill agents? | [CLAUDE.md](CLAUDE.md) · [`engine/kaggriculture_ref.py`](engine/kaggriculture_ref.py) |
-| How is an agent evaluated, and how do I name a variant? | [`opt/opponents.py`](opt/opponents.py) · [progress.md](progress.md) §10 |
+| What was tried, in what order, and what did it measure? | [§3](#3-the-journey) · [§6](#6-what-worked-and-what-we-closed-by-measurement) |
+| How does the engine actually work? Which mechanics kill agents? | [§1](#1-the-game) · [`engine/kaggriculture_ref.py`](engine/kaggriculture_ref.py) |
+| How is an agent evaluated, and how do I name a variant? | [§5](#5-evaluation-infrastructure) · [`opt/opponents.py`](opt/opponents.py) |
 | What exactly did we ship? | [`submissions/`](submissions/) · [§4](#4-the-final-solution) |
-| Which mistakes cost us time? | [§11](#11-hard-won-lessons) · [progress.md](progress.md) §8 |
+| Which mistakes cost us time? | [§11](#11-hard-won-lessons) |
 
 ## 10. Reproducing the results
 
@@ -639,9 +634,9 @@ the two derivative files in `submissions/`. No licence has been chosen yet for t
 
 ### Further reading
 
-[**Progress & handoff**](progress.md) &nbsp;·&nbsp;
-[**Experiment log**](PLAN.md) &nbsp;·&nbsp;
-[**Engine facts**](CLAUDE.md) &nbsp;·&nbsp;
+[**The journey**](#3-the-journey) &nbsp;·&nbsp;
+[**Final solution**](#4-the-final-solution) &nbsp;·&nbsp;
+[**Evaluation**](#5-evaluation-infrastructure) &nbsp;·&nbsp;
 [**Final submissions**](submissions/) &nbsp;·&nbsp;
 [**Official docs**](kaggriculture/README.md)
 
