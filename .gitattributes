@@ -1,0 +1,2 @@
+# Final submitted files: keep bytes exact so their sha256 matches the README
+submissions/** -text

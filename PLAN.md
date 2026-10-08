@@ -916,3 +916,33 @@ BUFFER10, OR2_CAP20, SLOT24} vs both active configs.
 SLOT18 + e692 60.0 / e696 59.9 (z~12), + BUFFER10 + e696 63.6 (but twins 88.9); e700 52.7; OR2_CAP20 52.2.
 **SUBMITTED 56706672** (09-30 11:58 UTC, user-approved) = SLOT24 build (sha e5b30b29). Evicts 56689378. Active pair
 56706672 + 56701685 (1999.8). 2 of 5 used on 09-30 UTC. p46 (running): SLOT 30/36/48 and e696/e692 on SLOT24.
+
+**p46** (114,773 games, 839 seeds, 10.9M; h2h vs the SLOT24 config 56706672): **SLOT48 e704 64.5% (z=12.5)**, 77.1% vs
+SLOT18 cfg, 89.9% vs SN48 cfg, 69.6% vs a SLOT24 rival, 93.5% vs twins. Non-monotonic: SLOT30 49.8, SLOT36 51.8 (a
+48-turn horizon = two full days of the tape's sales). SLOT24 + e692/e696 59.2 (z~10); SLOT24 + BUFFER10 + e696 62.7 but
+twins 89.0 (fails rule). **Calibration honesty:** past predictions overshot live (FEED0 predicted 2090-2135, live
+~1781; SN48 predicted 2150-2190, live ~2004-2076); farm edges among sell-now builds have not shown up live yet
+(SLOT18 1977 @ 6.75 h, SLOT24 1921 @ 2.9 h, SN48 ~2004). Expected for SLOT48: ~2000-2100, central ~2050.
+**SUBMITTED 56710794** (09-30 14:54 UTC, user-approved) = SLOT48 build (sha 939f914b). Evicts 56701685 (~1977).
+Active pair: 56710794 + 56706672. 3 of 5 used on 09-30 UTC. p47 (running): SLOT48 x {e696, e692} + SLOT 42/54/60/72.
+
+## 2026-09-30 16:59 UTC: FINAL PAIR LOCKED — 56713888 (SLOT48 + e696) + 56710794 (SLOT48 + e704)
+
+**p47** (100,597 games, 843 seeds, 11.0M; h2h vs 56710794 SLOT48): **SLOT48 + e696 58.7% (z=9.5)**, e692 58.6;
+vs SLOT24 69.0, vs SLOT18 77.7, vs SN48 88.3, vs a SLOT48 rival 68.6 (e704: 61.1), twins 93.8. SLOT 54/60/72 flat
+(49-50); SLOT42 37.1 — 48 is a sharp optimum. Passed the pre-registered swap rule.
+**SUBMITTED 56713888** (16:59 UTC, user-approved, 4th of 5 on 09-30 UTC) = SLOT48 + e696 (sha b75d734a). Evicts
+56706672 (~1933). The last two submissions are our two strongest builds; no further submissions planned.
+Session totals: ~3.1M farm games across rounds n28-p47; submissions 56648604 -> 56713888 (9).
+
+## 2026-09-30 20:09 UTC: FINAL PAIR = 56717752 (SN48 re-submitted) + 56713888 (SLOT48 + e696)
+
+Live at 19:27 UTC: 56710794 (SLOT48 e704) 1831.7 after 75 games, 56713888 1808.8 after 41; team rank 1094/10,225,
+bronze line 1854.3, silver 2086.5 (ladder fell ~190 in two days). Recent live: vs same-lineage forks we win 67-77%
+(matches the farm); vs a minority of different, economically stronger agents we lose by 4k-28k coins — the
+ceiling our timing/carrot changes cannot move.
+**Lesson (my error):** I kept replacing the live-proven SN48 build (56686173: peak 2076, settled ~2004) with builds
+that beat its config 80-90% in the farm, but live they settled no higher (SLOT18 ~1977, SLOT24 ~1930, FS12 ~1782).
+The farm panel is mostly twins and overstates live gains; a live-proven build should have stayed in the pair as a
+hedge. Fixed at the last moment: re-submitted the SN48 file (sha 77e854a4) as **56717752**, evicting 56710794.
+All 5 submissions of 2026-09-30 UTC used — the pair is locked by construction.
