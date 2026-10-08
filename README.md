@@ -6,16 +6,15 @@
 
 **Kaggriculture** — *a two-player, 720-turn farming and market simulation on Kaggle*
 
-[![Kaggle](https://img.shields.io/badge/Kaggle-kaggriculture-20BEFF?style=flat-square&logo=kaggle&logoColor=white)](https://www.kaggle.com/competitions/kaggriculture)
-[![Field](https://img.shields.io/badge/field-10%2C000%2B_teams-1B4D3E?style=flat-square)](#7-leaderboard-journey)
-[![Final pair](https://img.shields.io/badge/final_pair-56717752_·_56713888-F47B20?style=flat-square)](#4-the-final-solution)
-[![Games](https://img.shields.io/badge/simulated_games-~5.6M-8A7208?style=flat-square)](#5-evaluation-infrastructure)
-[![Parity](https://img.shields.io/badge/fastsim-bit--exact_parity-117A65?style=flat-square)](#5-evaluation-infrastructure)
-[![Runtime](https://img.shields.io/badge/main.py-stdlib_only-117A65?style=flat-square)](#1-the-game)
+[![Kaggle Competition](https://img.shields.io/badge/Kaggle_Competition-Kaggriculture-20BEFF?style=flat-square&logo=kaggle&logoColor=white)](https://www.kaggle.com/competitions/kaggriculture)
+[![Category](https://img.shields.io/badge/Category-Multi--Agent_Simulation-1B4D3E?style=flat-square)](#1-the-game)
+[![Team](https://img.shields.io/badge/Team-IUT__BakeNekos-F47B20?style=flat-square)](#final-standing)
+[![Participants](https://img.shields.io/badge/Participants-10%2C000%2B_teams-8A7208?style=flat-square)](#7-leaderboard-journey)
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=flat-square&logo=python&logoColor=white)](#10-reproducing-the-results)
 
-**[Md. Farhan Ishraq](https://www.kaggle.com/farhanishraqq)**¹ · **[Didhiti Nahid](https://www.kaggle.com/didhitinahid)**¹
+<b><a href="https://www.kaggle.com/farhanishraqq">Md. Farhan Ishraq</a></b><sup>1</sup> &nbsp;·&nbsp; <b><a href="https://www.kaggle.com/didhitinahid">Didhiti Nahid</a></b><sup>1</sup>
 
-<sub>¹ Islamic University of Technology (IUT), Bangladesh<br>
+<sub><sup>1</sup> Islamic University of Technology (IUT), Bangladesh<br>
 Kaggle simulation competition <a href="https://www.kaggle.com/competitions/kaggriculture"><code>kaggriculture</code></a> · September 2026</sub>
 
 <br>
