@@ -1,12 +1,15 @@
 <div align="center">
 
-# Team IUT_BakeNekos — Kaggriculture
+# Team IUT_BakeNekos — Bronze Medal Solution
 
 ### Out-selling your own twin: measured wrappers and knob surgery on the public frontier farming agent
 
 **Kaggriculture** — *a two-player, 720-turn farming and market simulation on Kaggle*
 
+🥉 **Bronze Medal — Kaggriculture on Kaggle, 2026**
+
 [![Kaggle Competition](https://img.shields.io/badge/Kaggle_Competition-Kaggriculture-20BEFF?style=flat-square&logo=kaggle&logoColor=white)](https://www.kaggle.com/competitions/kaggriculture)
+[![Result](https://img.shields.io/badge/Result-Bronze_Medal-CD7F32?style=flat-square)](#final-standing)
 [![Category](https://img.shields.io/badge/Category-Multi--Agent_Simulation-1B4D3E?style=flat-square)](#1-the-game)
 [![Team](https://img.shields.io/badge/Team-IUT__BakeNekos-F47B20?style=flat-square)](#final-standing)
 [![Participants](https://img.shields.io/badge/Participants-10%2C000%2B_teams-8A7208?style=flat-square)](#7-leaderboard-journey)
@@ -47,7 +50,7 @@ Kaggle simulation competition <a href="https://www.kaggle.com/competitions/kaggr
 
 | | |
 |---|---|
-| **Outcome** | Final pair locked 2026-09-30 20:09 UTC. The final Bradley-Terry ranking comes from ~2 weeks of post-deadline games; see [Final standing](#final-standing) |
+| **Outcome** | 🥉 **Bronze medal.** Final pair locked 2026-09-30 20:09 UTC; the final Bradley-Terry ranking comes from ~2 weeks of post-deadline games. See [Final standing](#final-standing) |
 | **Final pair** | `56717752` **SN48** build (sha256 `77e854a4…`) + `56713888` **SLOT48 + e696** build (sha256 `b75d734a…`); both files are in [`submissions/`](submissions/) |
 | **Base agent** | Aleksei Provorov's **π** (`c-pi-0927`), a member of the tetsutani Step1009 / Master Engine V4 lineage. Apache-2.0, all upstream notices retained |
 | **Our layers** | shed-overflow guard (margin 28) · endgame sell-all (step 696 / 704) · `_CA_FEED_DAYS=0` · sell-now layer switched on (`_OR2_SN_K=2`, `_OR2_SN_H=48`) · sale-advance `_S738_LOOK=8`, `_OR2_SLOT_H=48` |
@@ -59,7 +62,7 @@ Kaggle simulation competition <a href="https://www.kaggle.com/competitions/kaggr
 
 <img src="assets/final-leaderboard.png" alt="Team IUT_BakeNekos on the final Kaggriculture leaderboard" width="760">
 
-<sub>Final Kaggriculture leaderboard, team <b>IUT_BakeNekos</b>.</sub>
+<sub>Final Kaggriculture leaderboard, team <b>IUT_BakeNekos</b>: bronze medal.</sub>
 
 </div>
 
@@ -654,6 +657,6 @@ walked twice.*
 Apache-2.0 agents form the base of our submission; and destbreso, Georgy Mamarin and ashok205, for
 the community datasets that made offline evaluation possible.
 
-<sub>Kaggriculture on Kaggle · Team IUT_BakeNekos · Md. Farhan Ishraq & Didhiti Nahid · Islamic University of Technology</sub>
+<sub>Kaggriculture on Kaggle · Bronze medal · Team IUT_BakeNekos · Md. Farhan Ishraq & Didhiti Nahid · Islamic University of Technology</sub>
 
 </div>
