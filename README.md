@@ -6,13 +6,14 @@
 
 **Kaggriculture** — *a two-player, 720-turn farming and market simulation on Kaggle*
 
-🥉 **Bronze Medal — Kaggriculture on Kaggle, 2026**
+🥉 **Bronze Medal — 847th of 10,148 teams · Kaggriculture on Kaggle, 2026**
 
 [![Kaggle Competition](https://img.shields.io/badge/Kaggle_Competition-Kaggriculture-20BEFF?style=flat-square&logo=kaggle&logoColor=white)](https://www.kaggle.com/competitions/kaggriculture)
 [![Result](https://img.shields.io/badge/Result-Bronze_Medal-CD7F32?style=flat-square)](#final-standing)
+[![Final Rank](https://img.shields.io/badge/Final_Rank-847_%2F_10%2C148-CD7F32?style=flat-square)](#final-standing)
 [![Category](https://img.shields.io/badge/Category-Multi--Agent_Simulation-1B4D3E?style=flat-square)](#1-the-game)
 [![Team](https://img.shields.io/badge/Team-IUT__BakeNekos-F47B20?style=flat-square)](#final-standing)
-[![Participants](https://img.shields.io/badge/Participants-10%2C000%2B_teams-8A7208?style=flat-square)](#7-leaderboard-journey)
+[![Participants](https://img.shields.io/badge/Participants-10%2C148_teams-8A7208?style=flat-square)](#7-leaderboard-journey)
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=flat-square&logo=python&logoColor=white)](#10-reproducing-the-results)
 
 <b><a href="https://www.kaggle.com/farhanishraqq">Md. Farhan Ishraq</a></b><sup>1</sup> &nbsp;·&nbsp; <b><a href="https://www.kaggle.com/didhitinahid">Didhiti Nahid</a></b><sup>1</sup>
@@ -22,7 +23,7 @@ Kaggle simulation competition <a href="https://www.kaggle.com/competitions/kaggr
 
 <br>
 
-<img src="assets/kaggriculture-thumbnail.png" alt="Kaggriculture competition thumbnail" width="640">
+<img src="assets/kaggriculture-thumbnail.png" alt="Kaggriculture competition thumbnail" width="440">
 
 </div>
 
@@ -50,7 +51,7 @@ Kaggle simulation competition <a href="https://www.kaggle.com/competitions/kaggr
 
 | | |
 |---|---|
-| **Outcome** | 🥉 **Bronze medal.** Final pair locked 2026-09-30 20:09 UTC; the final Bradley-Terry ranking comes from ~2 weeks of post-deadline games. See [Final standing](#final-standing) |
+| **Outcome** | 🥉 **Bronze medal: 847th of 10,148 teams**, final rating 4428.7. The final pair was locked 2026-09-30 20:09 UTC and ranked by Bradley-Terry over ~2 weeks of post-deadline games. See [Final standing](#final-standing) |
 | **Final pair** | `56717752` **SN48** build (sha256 `77e854a4…`) + `56713888` **SLOT48 + e696** build (sha256 `b75d734a…`); both files are in [`submissions/`](submissions/) |
 | **Base agent** | Aleksei Provorov's **π** (`c-pi-0927`), a member of the tetsutani Step1009 / Master Engine V4 lineage. Apache-2.0, all upstream notices retained |
 | **Our layers** | shed-overflow guard (margin 28) · endgame sell-all (step 696 / 704) · `_CA_FEED_DAYS=0` · sell-now layer switched on (`_OR2_SN_K=2`, `_OR2_SN_H=48`) · sale-advance `_S738_LOOK=8`, `_OR2_SLOT_H=48` |
@@ -62,7 +63,7 @@ Kaggle simulation competition <a href="https://www.kaggle.com/competitions/kaggr
 
 <img src="assets/final-leaderboard.png" alt="Team IUT_BakeNekos on the final Kaggriculture leaderboard" width="760">
 
-<sub>Final Kaggriculture leaderboard, team <b>IUT_BakeNekos</b>: bronze medal.</sub>
+<sub>Final Kaggriculture leaderboard: team <b>IUT_BakeNekos</b> placed <b>847th of 10,148 teams</b> (rating 4428.7), bronze medal.</sub>
 
 </div>
 
@@ -502,11 +503,12 @@ We measured this by re-submitting byte-identical files:
 | 09-30 | `56701685` / `56706672` / `56710794` | + LOOK8 + SLOT 18 / 24 / 48 | ~1977 / ~1933 / ~1826 at eviction |
 | 09-30 | **`56713888`** | **SLOT48 + e696** (final 2/2) | final |
 | 09-30 | **`56717752`** | **SN48, re-submitted** (final 1/2) | final |
+| 10-15 | **final leaderboard** | team rating = the better of the final pair | **4428.7 · 847th / 10,148 · bronze** |
 
 <sub>* Each rating was read at a different age and on a different day. Read them for shape, not
 comparison. Last pre-deadline snapshot (09-30 19:27 UTC): team rank 1,094 of 10,225, while the whole
-ladder fell ~190 points in two days. The final ranking comes from the post-deadline games; see
-<a href="#final-standing">Final standing</a>.</sub>
+ladder fell ~190 points in two days. The final ranking came from the post-deadline games, on their own
+rating scale: 847th of 10,148, bronze; see <a href="#final-standing">Final standing</a>.</sub>
 
 ## 8. Repository layout
 
@@ -652,6 +654,6 @@ walked twice.*
 Apache-2.0 agents form the base of our submission; and destbreso, Georgy Mamarin and ashok205, for
 the community datasets that made offline evaluation possible.
 
-<sub>Kaggriculture on Kaggle · Bronze medal · Team IUT_BakeNekos · Md. Farhan Ishraq & Didhiti Nahid · Islamic University of Technology</sub>
+<sub>Kaggriculture on Kaggle · Bronze medal, 847th of 10,148 · Team IUT_BakeNekos · Md. Farhan Ishraq & Didhiti Nahid · Islamic University of Technology</sub>
 
 </div>
